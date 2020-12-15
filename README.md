@@ -83,8 +83,39 @@ Le programme simule le marché de l'energie : la production d'énergie, la conso
 
 ### Implémentation
 
+**Foyers**
+
+-> Le consommateur et le producteur sont tous les deux des foyers. Un producteur aura un taux de consommation bien plus élevé
+   
+      Home
+          Double :: Taux de consommation
+          Double :: Taux de production
+          Int :: Comportement (1. Donneur, 2. Vente, 3. Vendre si on peut pas donner)
+          Double :: argent disponnible
+          Double :: Energie disponnible
+      
 **Marché**
+
+-> Semaphore pour locker les x transactions simultanées
    
       Market
       
+           [Home] :: Listes des homes
+           Int :: temps
+           Double :: quantité d'energie disponible
+           Double :: prix de l'energie
+   
+   
+**Météo**
+   
+   On peut suivre un `cos` dilaté pour simuler les saisons
+   
+      Weather
       
+**Politique**
+   
+      Politics
+      
+**Économie**
+   
+      Economics
