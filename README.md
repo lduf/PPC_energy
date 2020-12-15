@@ -58,9 +58,10 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
 
 ### Economie
 
- Des évènements économiques peuvent apparaitre. Des taux de changes, …
- *(à détailler pcq c'est encore flou pour moi)*
+ Des évènements économiques peuvent apparaitre:
 
+ 1. Une crise
+ 2.
 
 ### Bug sur l'interprétation de cette phrase :
 
@@ -78,14 +79,16 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
 
 #### Communication
 
-| \         | Foyers | Marché | Météo | Politique | Économie |
-| -         | ------ | ------ | ----- | --------- |  ------- |
-| **Foyers**    | Message queues     | Message queue        |       |           |          |
-| **Marché**    |        |        |       |           |          |
-| **Météo**   |        | Shared memory       |  Shared memory     |           |          |
-| **Politique** |        |   Signal     |       |           |          |
-| **Économie**  |        |    Signal    |       |           |          |
-
+| \             | Foyers         | Marché           | Météo              | Politique | Économie | Ville       | Pays | Monde|
+| -             | ------         | ------           | -----              | --------- |  ------- |------       | ---- |------|
+| **Foyers**    | Message queue  | Message queue    |                    |           |          |   ??        |      |      |
+| **Marché**    |                |                  |                    |           |          |             |      |      |
+| **Météo**     |                |                  |  Shared memory     |           |          |Shared memory|      |      |
+| **Politique** |                |   Signal         |                    |           |          |             |      |      |
+| **Économie**  |                |    Signal        |                    |           |          |             |      |      |
+| **Ville**     |    signal      |                  |                    |           |          |             |      |      |
+| **Pays**      |                |                  |                    |           |          |             |      |      |
+| **Monde**     |                |                  |                    |           |          |             |      |      |
 #### Pseudo code
 
 **Main**
@@ -105,8 +108,8 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
 **Géographie**
 
   Nous décidons d'implémenter un système géographique dans notre programme.
-
-Le monde est
+*Monde*
+Le monde contient plusieurs pays les pays seront lancés en multiprocess
 
         Monde #process
 
@@ -114,8 +117,8 @@ Le monde est
               Economics :: données économiques mondiale
               [Country] :: liste des pays dans le monde
 
-
-Les pays
+*Pays*
+Les pays contiennent plusieurs villes, les villes sont lancées en multiprocess. Les événements politiques sont définis à cette échelle. Ainsi tous les foyers de ce pays ont les mêmes aléas politiques.
 
         Country #process
 
@@ -123,8 +126,8 @@ Les pays
                 [Ville] :: liste des villes dans le pays
                 Politics :: Événements politiques de la ville
 
-
-Les villes
+*Villes*
+Les villes contiennent nos foyers, lancé en multiprocess. La météo est définie à cette échelle. Ainsi tous les foyers de cette ville  sont soumis à la même météo. Définition d'une `shared memory` entre la ville et les foyers. La ville informe les foyers du changement de météo par `signal`
 
         City #process
 
@@ -181,7 +184,7 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
 
 **Météo**
 
-   On peut suivre un `cos` dilaté pour simuler les saisons. À l'échelle d'un ville
+   On peut suivre un `cos` dilaté pour simuler les saisons. À l'échelle d'une ville
 
    ![Température en fonction de l'année](/img/temperature.png)
 
@@ -199,7 +202,7 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
           Les coefficients sont déterminés à l'instanciation de la classe. Pour une ville donnée
 
 
-   Les processus de météo sont updatés via ```shared memory```
+   Les processus de météo updatent la ville via ```shared memory```
 
 
 **Politique**
@@ -208,6 +211,8 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
   Politique et économie sont des ```child process``` du marché. Ils communiquent via ```signal``` au processus parent.
 
       Politics
+
+              alea
 
 
 
