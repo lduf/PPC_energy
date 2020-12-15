@@ -17,7 +17,7 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 
 ## 2. Implémentation voulue:
 
- **Les foyers**
+### Les foyers
 
   Dans cette simulation, les foyers représentent des producteurs et des consommateurs. Chaque foyer a initialement un taux de production et un taux de consommation qui lui est propre.  
   On permet également aux foyers de stocker une certaine quantité d'énergie. En fonction du prix de l'énergie, les foyers ont une tendance à l'achat ou a la vente (pour remplir leur stockage)
@@ -29,32 +29,32 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 
   Un foyer est localisé dans une ville, elle même localisée dans un pays. Ce foyer pourra donner de l'énergie seulement aux autre foyer de sa ville.
 
- **Le marché**
+### Le marché
 
  Le marché contient la disponibilité de l'énergie, le prix de l'énergie qui fluctue en fonction des conditions (transaction avec les foyers, aléa politiques ou climatiques, …). Le marché sera ```multi-thread``` et s'occupera des transactions (avec les foyers) dans différents threads. De plus, le nombre de transaction simultanée est limité.
  Le marché à une portée mondiale, toutes les villes de tous les payes sont "connectées" au même marché.
 
- **La météo**
+### La météo
 
  La météo et surtout la température fluctue sur la consommation. Quand il fait froid on allume le chauffage, il fait chaud c'est la clim, …
  Les événements météorologiques auront effets à l'échelle d'une ville (dans un même pays, une ville peut être victime d'une canicule alors qu'une autre peut être victime d'une tempête)
  Toutes les villes d'un pays seront soumises à la même loi de température, mais les événement ponctuels et aléatoires seront indépendant à chaque villes
 
- **La politique**
+### La politique
 
  Des nouvelles lois sur la production d'énergie, des taxes, des tensions géopolitiques, … peuvent apparaitre et ont des conséquences sur la consommation et la production d'énergie.
  Les événements politiques auront effets à l'échelle d'un pays (c'est à dire pour toutes les villes données d'un même pays)
 
- **Economie**
+### Economie
 
  Des évènements économiques peuvent apparaitre. Des taux de changes, …
  *(à détailler pcq c'est encore flou pour moi)*
 
-**Structuration temporelle**
+### Structuration temporelle
 
 Nous décidons de séquencer l'execution de notre programme par journée. Par exemple : la météo de la ville est définie pour la journée. Les transactions entre le marché et les foyers peuvent se faire en continue.
 
- **Bug sur l'interprétation de cette phrase :**
+### Bug sur l'interprétation de cette phrase :
 
  >"home and market processes update terminals they are connected to permitting the operator of the simulation to track its progress"
 
