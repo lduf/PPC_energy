@@ -32,7 +32,10 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
   3. Vendre si on ne peut pas donner
 
   Un foyer est localisé dans une ville, elle même localisée dans un pays. Ce foyer pourra donner de l'énergie seulement aux autre foyer de sa ville.
-  Nous avons deux implémentations envisagées pour le don d'énergie:
+  Nous avons deux implémentations envisagées pour le don d'énergie :
+
+  1. Soit le don se fait de pair à pair, seulement ici nous avons un problème, si un donneur ne trouve pas de receveur, que fait il de l'énergie restante ? est ce qu'il la detruit ? reste-t-il en attente ?
+  2. Soit on passe par un tier, par exemple un mairie qui recevrait tous les dons, et permettant des échanges différerés, et sans bloquer completement le programme.
 
 ### Le marché
 
@@ -103,6 +106,8 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
 
   Nous décidons d'implémenter un système géographique dans notre programme.
 
+Le monde est
+
         Monde #process
 
               Int :: date du jour
@@ -110,6 +115,7 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
               [Country] :: liste des pays dans le monde
 
 
+Les pays
 
         Country #process
 
@@ -118,6 +124,7 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
                 Politics :: Événements politiques de la ville
 
 
+Les villes
 
         City #process
 
