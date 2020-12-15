@@ -17,6 +17,10 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 
 ## 2. Implémentation voulue:
 
+### Structuration temporelle
+
+Nous décidons de séquencer l'execution de notre programme par journée. Par exemple : la météo de la ville est définie pour la journée. Les transactions entre le marché et les foyers peuvent se faire en continue.
+
 ### Les foyers
 
   Dans cette simulation, les foyers représentent des producteurs et des consommateurs. Chaque foyer a initialement un taux de production et un taux de consommation qui lui est propre.  
@@ -28,6 +32,7 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
   3. Vendre si on ne peut pas donner
 
   Un foyer est localisé dans une ville, elle même localisée dans un pays. Ce foyer pourra donner de l'énergie seulement aux autre foyer de sa ville.
+  Nous avons deux implémentations envisagées pour le don d'énergie:
 
 ### Le marché
 
@@ -38,21 +43,21 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 
  La météo et surtout la température fluctue sur la consommation. Quand il fait froid on allume le chauffage, il fait chaud c'est la clim, …
  Les événements météorologiques auront effets à l'échelle d'une ville (dans un même pays, une ville peut être victime d'une canicule alors qu'une autre peut être victime d'une tempête)
- Toutes les villes d'un pays seront soumises à la même loi de température, mais les événement ponctuels et aléatoires seront indépendant à chaque villes
+ Toutes les villes d'un pays seront soumises à la même loi de température, mais les événement ponctuels et aléatoires seront indépendant à chaque villes.
 
 ### La politique
 
  Des nouvelles lois sur la production d'énergie, des taxes, des tensions géopolitiques, … peuvent apparaitre et ont des conséquences sur la consommation et la production d'énergie.
- Les événements politiques auront effets à l'échelle d'un pays (c'est à dire pour toutes les villes données d'un même pays)
+ Les événements politiques auront effets à l'échelle d'un pays (c'est à dire pour toutes les villes données d'un même pays).
+ Par exemple ces derniers pourraient être:
+
+ 1. Révolution : tous les homes changent de bord (préférer vendre ou donner, etc)
 
 ### Economie
 
  Des évènements économiques peuvent apparaitre. Des taux de changes, …
  *(à détailler pcq c'est encore flou pour moi)*
 
-### Structuration temporelle
-
-Nous décidons de séquencer l'execution de notre programme par journée. Par exemple : la météo de la ville est définie pour la journée. Les transactions entre le marché et les foyers peuvent se faire en continue.
 
 ### Bug sur l'interprétation de cette phrase :
 
@@ -94,6 +99,37 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
           #Répartition géographique
           #1er tirage équiprobable et ensuite le tirage avantage les plus grande villes
 
+**Géographie**
+
+  Nous décidons d'implémenter un système géographique dans notre programme.
+
+        Monde #process
+
+              Int :: date du jour
+              Economics :: données économiques mondiale
+              [Country] :: liste des pays dans le monde
+
+
+
+        Country #process
+
+                String :: nom du pays
+                [Ville] :: liste des villes dans le pays
+                Politics :: Événements politiques de la ville
+
+
+
+        City #process
+
+              String :: nom de ville
+              [Home] :: Liste des foyers de la ville
+              Météo :: météo de la ville
+
+              # 1 message queue par ville
+              # Dans cette message queue tous les foyers la lise et les foyers qui ont besoin écrivent dans la message queue
+              # La lecture de la message queue est systématique.
+
+
 
 **Foyers**
 
@@ -108,18 +144,32 @@ Les foyers communiquent entre eux et avec le marché avec des ```message queues`
           Int :: Comportement (1. Donneur, 2. Vente, 3. Vendre si on peut pas donner)
           Double :: argent disponible
           Double :: Energie disponible
-          (String, String) :: (Nom de la ville, Nom du pays)
+
+          function buy:: (Si j'ai plus de stock) => Message dans la message queue de la ville pour don
+
+          #si je suis un vendeur
+          function sell:: (Si j'ai trop d'énergie => ajoute un message dans la message queue MARKET)
+
+          # Si je suis un donneur
+          function give:: (Si trop d'énergie && un message dans la message queue alors je donne)
+          # communication par message queue interne à la ville pour donner de l'énergie (for free)
 
 **Marché**
 
-Semaphore pour locker les x transactions simultanées
+Semaphore pour locker les x transactions simultanées.
+Thread interne au marché : des Fred comptables pour accueillir les zoulous de la file d'attente (`message queue`) qui vient des foyers
 
       Market
 
-           [Home] :: Listes des homes
+           Monde :: Listes des homes
            Int :: temps
+           Int :: nombre de transaction maximum
            Double :: quantité d'énergie disponible
            Double :: prix de l'énergie
+
+           function ::
+           calculer à nouveau le prix de l'energie et la quantité d'Energie
+           # Cette fonction va être lancée par thread
 
 
 **Météo**
@@ -139,6 +189,7 @@ Semaphore pour locker les x transactions simultanées
           exemple de fonction de température :
 
           Température(x) = 25cos(π+8/366*x)+3cos(x/10)-4cos(x/20)+5
+          Les coefficients sont déterminés à l'instanciation de la classe. Pour une ville donnée
 
 
    Les processus de météo sont updatés via ```shared memory```
