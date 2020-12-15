@@ -20,15 +20,18 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
  **Les foyers**
  
   Dans cette simulation, les foyers représentent des producteurs et des consommateurs. Chaque foyer a initialement un taux de production et un taux de consommation qui lui est propre.  
-  De plus, dans le cas d'un surplus d'énergie un foyer peut adopté un de ces trois comportement 
+  On permet également aux foyers de stocker une certaine quantité d'énergie. En fonction du prix de l'énergie, les foyers ont une tendence à l'achat ou a la vente (pour remplir leur stockage)
+  De plus, dans le cas d'un surplus d'énergie un foyer peut adopté un de ces trois comportement.
   
   1. Toujours donner le surplus d'énergie
   2. Toujours vendre sur le marché
   3. Vendre si on ne peut pas donner
+  
+  
  
  **Le marché**
  
- Le marché contient la disponnibilité de l'énergie, le prix de l'énergie qui fluctue en fonction des conditions (transaction avec les foyers, aléa poliques ou climatiques, …). Le marché sera ```multi-thread``` et s'occupera des transactions (avec les foyers) dans différents threads. De plus, le nombre de transaction simultanée est limité.
+ Le marché contient la disponibilité de l'énergie, le prix de l'énergie qui fluctue en fonction des conditions (transaction avec les foyers, aléa poliques ou climatiques, …). Le marché sera ```multi-thread``` et s'occupera des transactions (avec les foyers) dans différents threads. De plus, le nombre de transaction simultanée est limité.
  
  **La météo**
  
@@ -91,9 +94,10 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
       
           Double :: Taux de consommation
           Double :: Taux de production
+          Double :: Capacité de stockage
           Int :: Comportement (1. Donneur, 2. Vente, 3. Vendre si on peut pas donner)
-          Double :: argent disponnible
-          Double :: Energie disponnible
+          Double :: argent disponible
+          Double :: Energie disponible
       
 **Marché**
 
