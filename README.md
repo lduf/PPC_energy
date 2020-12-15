@@ -58,12 +58,12 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
  
  **Politique et économie**
  
- Politique et économie sont des ```child process``` du marché. Ils communiques via ```signal``` au processus parent.
+ Politique et économie sont des ```child process``` du marché. Ils communiquent via ```signal``` au processus parent.
  
  
  **Bug sur l'interprétation de cette phrase :**
  
- "home and market processes update terminals they are connected to permitting the operator of the simulation to track its progress"
+ >"home and market processes update terminals they are connected to permitting the operator of the simulation to track its progress"
  
  En gros on a des retours terminal sur home et market ?
  
@@ -113,9 +113,17 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
    
 **Météo**
    
-   On peut suivre un `cos` dilaté pour simuler les saisons
+   On peut suivre un `cos` dilaté pour simuler les saisons.
+   
+   Plus la température est extrême plus la consommation augmente
    
       Weather
+          
+          Double :: température
+          int :: date permet de définir une température en fonction
+          
+          function :: Maxi*cos(1/365*date) + valeurRandom
+          
       
 **Politique**
    
