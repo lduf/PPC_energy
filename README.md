@@ -79,3 +79,12 @@ Le programme simule le marché de l'energie : la production d'énergie, la conso
 | **Météo**   |        | Shared memory       |  Shared memory     |           |          |
 | **Politique** |        |   Signal     |       |           |          |
 | **Économie**  |        |    Signal    |       |           |          |
+
+
+### Implémentation
+
+**Marché**
+   
+      Market
+      
+      
