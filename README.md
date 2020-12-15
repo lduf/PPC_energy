@@ -69,3 +69,13 @@ Le programme simule le marché de l'energie : la production d'énergie, la conso
  <img alt="Calcul du prix de l'energie" src="/img/calcul_price.png">
  
  ## Structuration et implémentation :
+ 
+ ### Communication
+
+| \         | Foyers | Marché | Météo | Politique | Économie |
+| -         | ------ | ------ | ----- | --------- |  ------- |
+| **Foyers**    | Message queues     | Message queue        |       |           |          |
+| **Marché**    |        |        |       |           |          |
+| **Météo**   |        | Shared memory       |  Shared memory     |           |          |
+| **Politique** |        |   Signal     |       |           |          |
+| **Économie**  |        |    Signal    |       |           |          |
