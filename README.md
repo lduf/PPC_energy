@@ -126,9 +126,15 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
           
       
 **Politique**
+
+  Probabilité d'un évènement. Chaque évènement à une probabilité d'apparition et à des conséquences sur le marché. 
    
       Politics
       
+      
+      
 **Économie**
+   
+   Probabilité d'un évènement. Chaque évènement à une probabilité d'apparition et à des conséquences sur le marché. 
    
       Economics
