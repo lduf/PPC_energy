@@ -79,16 +79,16 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
 
 #### Communication
 
-| \             | Foyers         | Marché           | Météo              | Politique | Économie | Ville       | Pays | Monde|
-| -             | ------         | ------           | -----              | --------- |  ------- |------       | ---- |------|
-| **Foyers**    | Message queue  | Message queue    |                    |           |          |   ??        |      |      |
-| **Marché**    |                |                  |                    |           |          |             |      |      |
-| **Météo**     |                |                  |  Shared memory     |           |          |Shared memory|      |      |
-| **Politique** |                |   Signal         |                    |           |          |             |      |      |
-| **Économie**  |                |    Signal        |                    |           |          |             |      |      |
-| **Ville**     |    signal      |                  |                    |           |          |             |      |      |
-| **Pays**      |                |                  |                    |           |          |             |      |      |
-| **Monde**     |                |                  |                    |           |          |             |      |      |
+| \             | Foyers              | Marché           | Météo              | Politique | Économie | Ville             | Pays | Monde|
+| -             | ------              | ------           | -----              | --------- |  ------- |------             | ---- |------|
+| **Foyers**    | **Message queue**   | **Message queue**|  Via ville signal  |           |          |   ??              |      |      |
+| **Marché**    |                     |                  |                    |           |          |                   |      |      |
+| **Météo**     |                     |                  |                    |           |          |**Shared memory**  |      |      |
+| **Politique** |                     |   **Signal**     |                    |           |          |                   |      |      |
+| **Économie**  |                     |   **Signal**     |                    |           |          |                   |      |      |
+| **Ville**     |    signal           |                  |                    |           |          |                   |      |      |
+| **Pays**      |                     |                  |                    |           |          |                   |      |      |
+| **Monde**     |                     |                  |                    |           |          |                   |      |      |
 #### Pseudo code
 
 **Main**
