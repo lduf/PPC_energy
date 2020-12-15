@@ -122,7 +122,7 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
           Double :: température
           int :: date permet de définir une température en fonction
           
-          function :: Maxi*cos(1/365*date) + valeurRandom
+          function :: Maxi*cos(4/365*date) + valeurRandom
           
       
 **Politique**
