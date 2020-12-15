@@ -9,7 +9,7 @@ Le but est d'implémenter une simulation Python prenant avantage du multi-proces
 
 Le programme simule le marché de l'energie : la production d'énergie, la consommation (représentés par des foyers/maisons), les conditions météo et des éléments aléatoires contribuent au prix de l'électricité.
 
- - les consommateurs peuvent céder leur surplus d'énergie aux consommateur environnant ou de vendre ce surplus ce qui induit une diminution du prix de l'électricité.
+ - les consommateurs peuvent céder leur surplus d'énergie aux consommateurs environnants ou de vendre ce surplus ce qui induit une diminution du prix de l'électricité.
  -  Les foyers ayant besoin d'électricité doivent en acheter (sur le marché) s'ils ne peuvent pas en récupérer à un consommateur environnant (en condition de surplus)
  - Le prix de l'énergie augmente quand la consommation devient plus importante que la consommation
  - Les changements de température (*que je juge périodique*) impactent la consommation (donc le prix)
