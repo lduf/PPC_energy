@@ -3,7 +3,7 @@ Projet de PPC - The Energy Market
 
 <hr>
 
-## 1. Objectif :
+## 1. Objectif du projet:
 
 Le but est d'implémenter une simulation Python prenant avantage du multi-processing et du multi-threading.
 
@@ -15,7 +15,7 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
  - Les changements de température (*que je juge périodique*) impactent la consommation (donc le prix)
  - Des évènements aléatoires (nouvelle lois, explosion d'une centrale, …) peuvent affecter le prix de l'énergie
 
- ## Implémentation minimale :
+## 2. Implémentation voulue:
 
  **Les foyers**
 
@@ -37,32 +37,22 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
  **La météo**
 
  La météo et surtout la température fluctue sur la consommation. Quand il fait froid on allume le chauffage, il fait chaud c'est la clim, …
- Les évenements météorologiques auront effets à l'échelle d'une ville (dans un même pays, une ville peut être victime d'une canicule alors qu'une autre peut être victime d'une tempête)
+ Les événements météorologiques auront effets à l'échelle d'une ville (dans un même pays, une ville peut être victime d'une canicule alors qu'une autre peut être victime d'une tempête)
+ Toutes les villes d'un pays seront soumises à la même loi de température, mais les événement ponctuels et aléatoires seront indépendant à chaque villes
 
  **La politique**
 
  Des nouvelles lois sur la production d'énergie, des taxes, des tensions géopolitiques, … peuvent apparaitre et ont des conséquences sur la consommation et la production d'énergie.
- Les évenements politiques auront effets à l'échelle d'un pays (c'est à dire pour toutes les villes données d'un même pays)
+ Les événements politiques auront effets à l'échelle d'un pays (c'est à dire pour toutes les villes données d'un même pays)
 
  **Economie**
 
  Des évènements économiques peuvent apparaitre. Des taux de changes, …
  *(à détailler pcq c'est encore flou pour moi)*
 
- ## Communication inter-process
+**Structuration temporelle**
 
- **Les foyers**
-
- Les foyers communiquent entre eux et avec le marché avec des ```message queues```
-
- **La météo**
-
- Les processus de météo sont updatés via ```shared memory```
-
- **Politique et économie**
-
- Politique et économie sont des ```child process``` du marché. Ils communiquent via ```signal``` au processus parent.
-
+Nous décidons de séquencer l'execution de notre programme par journée. Par exemple : la météo de la ville est définie pour la journée. Les transactions entre le marché et les foyers peuvent se faire en continue.
 
  **Bug sur l'interprétation de cette phrase :**
 
@@ -70,13 +60,15 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 
  En gros on a des retours terminal sur home et market ?
 
- ## Prix de l'énergie
+### Prix de l'énergie
 
- <img alt="Calcul du prix de l'energie" src="/img/calcul_price.png">
+ <img alt="Calcul du prix de l'énergie" src="/img/calcul_price.png">
 
- ## Structuration et implémentation :
+## 3. Structuration et implémentation :
 
- ### Communication
+### Implémentation
+
+#### Communication
 
 | \         | Foyers | Marché | Météo | Politique | Économie |
 | -         | ------ | ------ | ----- | --------- |  ------- |
@@ -86,12 +78,11 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 | **Politique** |        |   Signal     |       |           |          |
 | **Économie**  |        |    Signal    |       |           |          |
 
-
-### Implémentation
+#### Pseudo code
 
 **Main**
 
--> Un fichier principal gère les différentes classes. Il pose les bases de la simulation.
+  Un fichier principal gère les différentes classes. Il pose les bases de la simulation.
 
       Main
 
@@ -104,10 +95,10 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
           #1er tirage équiprobable et ensuite le tirage avantage les plus grande villes
 
 
-
 **Foyers**
 
--> Le consommateur et le producteur sont tous les deux des foyers. Un producteur aura un taux de consommation bien plus élevé
+Le consommateur et le producteur sont tous les deux des foyers. Un producteur aura un taux de consommation bien plus élevé
+Les foyers communiquent entre eux et avec le marché avec des ```message queues```
 
       Home
 
@@ -121,7 +112,7 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 
 **Marché**
 
--> Semaphore pour locker les x transactions simultanées
+Semaphore pour locker les x transactions simultanées
 
       Market
 
@@ -135,6 +126,8 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 
    On peut suivre un `cos` dilaté pour simuler les saisons. À l'échelle d'un ville
 
+   ![Température en fonction de l'année](/img/temperature.png)
+
    Plus la température est extrême plus la consommation augmente.
 
       Weather
@@ -142,14 +135,22 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
           Double :: température
           int :: date permet de définir une température en fonction
 
-          function :: Maxi*cos(4/365*date) + valeurRandom
+          function :: Maxi*cos(4/366*date) + valeurRandom
+          exemple de fonction de température :
+
+          Température(x) = 25cos(π+8/366*x)+3cos(x/10)-4cos(x/20)+5
+
+
+   Les processus de météo sont updatés via ```shared memory```
 
 
 **Politique**
 
   Probabilité d'un évènement. Chaque évènement à une probabilité d'apparition et à des conséquences sur le marché. À l'échelle d'un pays
+  Politique et économie sont des ```child process``` du marché. Ils communiquent via ```signal``` au processus parent.
 
       Politics
+
 
 
 
