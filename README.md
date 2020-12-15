@@ -66,6 +66,6 @@ Le programme simule le marché de l'energie : la production d'énergie, la conso
  
  ## Prix de l'énergie
  
- // ajout de l'image du calcul du prix
+ <img alt="Calcul du prix de l'energie" src="/img/calcul_price.png">
  
  ## Structuration et implémentation :
