@@ -88,6 +88,7 @@ Le programme simule le marché de l'energie : la production d'énergie, la conso
 -> Le consommateur et le producteur sont tous les deux des foyers. Un producteur aura un taux de consommation bien plus élevé
    
       Home
+      
           Double :: Taux de consommation
           Double :: Taux de production
           Int :: Comportement (1. Donneur, 2. Vente, 3. Vendre si on peut pas donner)
