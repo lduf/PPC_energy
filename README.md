@@ -94,7 +94,7 @@ L'économie est de rang mondiale, elle affectera de la même manière l'ensemble
 | **Pays**      |       X             |           X             |       X            |     X     |    X     |     signal        |         X         |     signal       |
 | **Monde**     |       X             |         Signal          |       X            |     X     |    X     |         X         |       signal      |        X         |
 
-![Schéma de la communication de notre simulation][Schéma de la communication au sein de notre simulation](/img/communication_de_la_simulation.png)
+![Schéma de la communication de notre simulation](/img/communication_de_la_simulation.png)
 
 #### Pseudo code
 
