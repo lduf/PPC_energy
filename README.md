@@ -27,15 +27,13 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
   On permet également aux foyers de stocker une certaine quantité d'énergie. En fonction du prix de l'énergie, les foyers ont une tendance à l'achat ou a la vente (pour remplir leur stockage)
   De plus, dans le cas d'un surplus d'énergie un foyer peut adopté un de ces trois comportement.
 
-  1. Toujours donner le surplus d'énergie
+  1. Toujours donner le surplus d'énergie (don à un voisin direct (+ ou - 1 par rapport à sa position dans le tableau))
   2. Toujours vendre sur le marché
   3. Vendre si on ne peut pas donner
 
-  Un foyer pourra donner de l'énergie seulement à ses voisins direct (les foyers ayant le même argument ville). trop galère ça AH mais on fait comment alors ? +/- 1 dans le tableau
-  Implémentations envisagée pour le don d'énergie :
-
-  1. Le don se fait de pair à pair, seulement ici nous avons un problème, si un donneur ne trouve pas de receveur, que fait il de l'énergie restante ? est ce qu'il la détruit ? reste-t-il en attente ?
-
+  Un foyer pourra donner de l'énergie seulement à ses voisins direct
+  Implémentation envisagée pour le don d'énergie :
+  Don de pair à pair par la message queue, envois de message par les donneurs, tous les foyers verifiant si un message d'un donneur proposant de donner avant d'acheter au m
 
 ### Le marché
 
@@ -109,10 +107,13 @@ Exemple d'événement
 **Foyers**
 
 Le consommateur et le producteur sont tous les deux des foyers. Un producteur aura un taux de consommation bien plus élevé.  
-Les foyers communiquent entre eux et avec le marché avec des ```message queue```
+Les foyers communiquent entre eux et avec le marché avec des ```message queue```.
+La message queue foyer peut être pensée comme ça : on accepte les types [position-1, position+1] et on envoie des dons avec son type
+
 
       Home
 
+          Int :: N° du foyer (position dans le tableau)
           Double :: Taux de consommation
           Double :: Taux de production
           Double :: Capacité de stockage
@@ -127,7 +128,24 @@ Les foyers communiquent entre eux et avec le marché avec des ```message queue``
 
           # Si je suis un donneur
           function give:: (Si trop d'énergie && un message dans la message queue alors je donne)
-          # communication par message queue interne à la ville pour donner de l'énergie (for free)
+          # communication par message queue aux foyers voisins en mode 3 ways handshakes :
+
+              message dans message queue ("Type ": position, "Message" : quantité d'énergie à donner)
+
+              voisin_gauche []=> message queue ["J'ai trop d'energie tu la veux ?"] type ==> position-1
+                -> oui --> je te donne
+                -> non --> je donne au voisin de droite :
+                voisin_droit => message queue ["J'ai trop d'energie tu la veux ?"] type ==> position +1
+                -> oui --> je te donne
+                -> non --> {
+                  si comportement == donneur  =:> l'énergie est perdue
+                  si comportement == vendeur =:> l'énergie est vendue
+                  }:
+
+Voici le processus pour effectuer un don entre deux foyers :
+
+![Mécanisme de don entre Foyers](/img/don_mecanisme.jpeg)
+
 
 **Marché**
 
