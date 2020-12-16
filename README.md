@@ -213,7 +213,7 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
         Alea
 
             type :: Market ou Foyers
-            tuple :: ("Nom de l'éléa",valeur)
+            tuple :: ("Nom de l'aléa",valeur)
 
 **Météo**
 
