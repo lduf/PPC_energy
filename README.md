@@ -11,7 +11,7 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 
  - les consommateurs peuvent céder leur surplus d'énergie aux consommateurs environnants ou de vendre ce surplus ce qui induit une diminution du prix de l'électricité.
  -  Les foyers ayant besoin d'électricité doivent en acheter (sur le marché) s'ils ne peuvent pas en récupérer à un consommateur environnant (en condition de surplus)
- - Le prix de l'énergie augmente quand la consommation devient plus importante que la consommation
+ - Le prix de l'énergie augmente quand la consommation devient plus importante que la production
  - Les changements de température (*que je juge périodique*) impactent la consommation (donc le prix)
  - Des évènements aléatoires (nouvelle lois, explosion d'une centrale, …) peuvent affecter le prix de l'énergie
 
@@ -31,7 +31,7 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
   2. Toujours vendre sur le marché
   3. Vendre si on ne peut pas donner
 
-  Un foyer est localisé dans une ville, elle même localisée dans un pays. Ce foyer pourra donner de l'énergie seulement aux autre foyer de sa ville.
+  Un foyer est localisé dans une ville, elle même localisée dans un pays. Ce foyer pourra donner de l'énergie seulement aux autres foyers de sa ville.
   Nous avons deux implémentations envisagées pour le don d'énergie :
 
   1. Soit le don se fait de pair à pair, seulement ici nous avons un problème, si un donneur ne trouve pas de receveur, que fait il de l'énergie restante ? est ce qu'il la detruit ? reste-t-il en attente ?
@@ -40,13 +40,13 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
 ### Le marché
 
  Le marché contient la disponibilité de l'énergie, le prix de l'énergie qui fluctue en fonction des conditions (transaction avec les foyers, aléa politiques ou climatiques, …). Le marché sera ```multi-thread``` et s'occupera des transactions (avec les foyers) dans différents threads. De plus, le nombre de transaction simultanée est limité.
- Le marché à une portée mondiale, toutes les villes de tous les payes sont "connectées" au même marché.
+ Le marché à une portée mondiale, tous les foyers ( de toutes les villes de tous les pays) sont "connectés" au même marché.
 
 ### La météo
 
  La météo et surtout la température fluctue sur la consommation. Quand il fait froid on allume le chauffage, il fait chaud c'est la clim, …
  Les événements météorologiques auront effets à l'échelle d'une ville (dans un même pays, une ville peut être victime d'une canicule alors qu'une autre peut être victime d'une tempête)
- Toutes les villes d'un pays seront soumises à la même loi de température, mais les événement ponctuels et aléatoires seront indépendant à chaque villes.
+ Tous les foyers d'une même ville auront donc la même température et les mêmes aléas climatiques. Enfin la température mondiale ne sera pas 100% aléatoire : elle suivra une fonction dont les coefficients seront tirés aléatoirement pour chaque ville.
 
 ### La politique
 
@@ -54,10 +54,11 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
  Les événements politiques auront effets à l'échelle d'un pays (c'est à dire pour toutes les villes données d'un même pays).
  Par exemple ces derniers pourraient être:
 
- 1. Révolution : tous les homes changent de bord (préférer vendre ou donner, etc)
+ 1. Révolution : tous les foyers changent de bord (préférer vendre ou donner, etc)
 
 ### Economie
 
+L'économie est de rang mondiale, elle affectera de la même manière l'ensemble des foyers de la planète.
  Des évènements économiques peuvent apparaitre:
 
  1. Une crise
@@ -68,6 +69,7 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
  >"home and market processes update terminals they are connected to permitting the operator of the simulation to track its progress"
 
  En gros on a des retours terminal sur home et market ?
+ Gestion de l'affichage sur un terminal extérieur
 
 ### Prix de l'énergie
 
@@ -91,27 +93,25 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
 | **Ville**     |    signal           |           X             |   Shared memory    |     X     |    X     |        X          |         X         |        X         |
 | **Pays**      |       X             |           X             |       X            |     X     |    X     |     signal        |         X         |     signal       |
 | **Monde**     |       X             |         Signal          |       X            |     X     |    X     |         X         |       signal      |        X         |
+
+![Schéma de la communication de notre simulation](/img/communication_de_la_simulation.png)
+
 #### Pseudo code
 
 **Main**
 
   Un fichier principal gère les différentes classes. Il pose les bases de la simulation.
-  Il lance un thread `Market` et un thread ```Monde```T
+  Il lance un thread `Market` et un thread ```Monde```
 
       Main
 
           Int :: date du jour
           Market::  marché de l'énergie
-          Monde:: Monde dans lequel évolue le Market
 
-          #set de probabilité
-
-          #Répartition géographique
-          #1er tirage équiprobable et ensuite le tirage avantage les plus grande villes
 
 **Géographie**
 
-  Nous décidons d'implémenter un système géographique dans notre programme.
+  Nous décidons d'implémenter un système géographique dans notre programme. La répartition sera pseudo aléatoire. Le premier tirage est equiprobable (en terme de pays). Ensuite lors d'un tirage, plus il y a de villes dans un pays donné, plus il est probable que la ville appartienne à ce pays. (On appliquera le même raisonnemnet pour les foyers dans les villes)
 *Monde*
 Le monde contient plusieurs pays les pays seront lancés en multiprocess
 
@@ -123,9 +123,11 @@ Le monde contient plusieurs pays les pays seront lancés en multiprocess
                 Si descend à Foyers -> envoie un signal à tous les pays, pour qu'ils transmettent eux mêmes aux villes puis aux foyers
                 Si remonte à Market -> envoie un signal à Monde pour qu'il parle à Market
 
+              #Il faut aussi une fonction qui gère la transmission de signal vers le haut ou vers le bas en fonction de la consigne
+
               [Country] :: liste des pays dans le monde
 
-              [Thread]:: Pool de threads qui exécutes des fonctions sur nos pays
+              [Thread]:: Pool de threads qui exécute des fonctions sur nos pays
 
 *Pays*
 Les pays contiennent plusieurs villes, les villes sont lancées en multiprocess. Les événements politiques sont définis à cette échelle. Ainsi tous les foyers de ce pays ont les mêmes aléas politiques.
@@ -150,6 +152,8 @@ Les villes contiennent nos foyers, lancé en multiprocess. La météo est défin
               [Home] :: Liste des foyers de la ville
               Météo :: météo de la ville
 
+              #Il faut aussi une fonction qui gère la transmission de signal vers le haut ou vers le bas en fonction de la consigne
+
               # 1 message queue par ville
               # Dans cette message queue tous les foyers la lise et les foyers qui ont besoin écrivent dans la message queue
               # La lecture de la message queue est systématique.
@@ -159,8 +163,8 @@ Les villes contiennent nos foyers, lancé en multiprocess. La météo est défin
 
 **Foyers**
 
-Le consommateur et le producteur sont tous les deux des foyers. Un producteur aura un taux de consommation bien plus élevé
-Les foyers communiquent entre eux et avec le marché avec des ```message queues```
+Le consommateur et le producteur sont tous les deux des foyers. Un producteur aura un taux de consommation bien plus élevé.  
+Les foyers communiquent entre eux et avec le marché avec des ```message queue```
 
       Home
 
@@ -182,7 +186,7 @@ Les foyers communiquent entre eux et avec le marché avec des ```message queues`
 
 **Marché**
 
-Semaphore pour locker les x transactions simultanées.
+Semaphore pour locker les x transactions simultanées.  
 Thread interne au marché : des Fred comptables pour accueillir les zoulous de la file d'attente (`message queue`) qui vient des foyers
 
       Market
@@ -191,11 +195,16 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
            Int :: temps
            Int :: nombre de transaction maximum
            Double :: quantité d'énergie disponible
+           Double :: prix de l'énergie en t-1
            Double :: prix de l'énergie
 
            function ::
            calculer à nouveau le prix de l'energie et la quantité d'Energie
            # Cette fonction va être lancée par thread
+
+           # Il est possible de faire une seule et meme fonction qui gère ça à partir d'un type dans la message queue
+           function :: vendre de l'énergie à un foyer (lancé dans un thread)
+           function :: acheter de l'énergie à un foyer (lancé dans un thread)
 
 **Aléas**
 
@@ -221,9 +230,11 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
 
           function :: Maxi*cos(4/366*date) + valeurRandom
           exemple de fonction de température :
-
           Température(x) = 25cos(π+8/366*x)+3cos(x/10)-4cos(x/20)+5
           Les coefficients sont déterminés à l'instanciation de la classe. Pour une ville donnée
+
+          function :: function de génération d'un aléa climatique (température):
+                return Alea("Foyers", "Température", g(x)) où g(x) est une fonction qui calcule l'incidence de la température sur la consommation (à la hausse ou à la baisse)
 
 
    Les processus de météo updatent la ville via ```shared memory```
@@ -232,7 +243,7 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
 **Politique**
 
   Probabilité d'un évènement. Chaque évènement à une probabilité d'apparition et à des conséquences sur le marché ou les foyers. À l'échelle d'un pays
-  Politique et économie sont des ```child process``` du marché (ici des child de child). Ils communiquent via ```signal``` au processus parent.
+  Politique et économie sont des ```child process``` du marché (ici des child de child). Ils communiquent via ```signal``` au processus parent qui fait remonter l'information.
 
       Politics
 
@@ -247,7 +258,8 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
 
 **Économie**
 
-   Probabilité d'un évènement. Chaque évènement à une probabilité d'apparition et à des conséquences sur le marché. À l'échelle mondiale
+   Probabilité d'un évènement. Chaque évènement à une probabilité d'apparition et à des conséquences sur le marché. À l'échelle mondiale.
+   Politique et économie sont des ```child process``` du marché (ici des child de child). Ils communiquent via ```signal``` au processus parent qui fait remonter l'information.
 
       Economics
 
@@ -255,3 +267,15 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
                   case 1 : return Alea("Market","Crise", -10%)
                   …
                   else return Null
+
+### Autre implémentation possible :
+
+ 1 unique process politique / économie / météo qui calcule tout le temps et pour tous les pays/villes.
+ En gros le process tourne et calcule des trucs et renvoie la data à celui qui lui demande qqch
+
+## Questions
+
+1. Est ce qu'un signal peut se transmettre du fils au père ?
+2. Si on fait de la POO, est ce que l'on doit prendre en compte les relations père fils dans nos communications inter-process ?
+3. Est ce que l'on peut thread les villes qui thread le foyers ?
+4. Est ce qu'on peut fusionner economie et politiques ?
