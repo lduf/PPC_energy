@@ -85,7 +85,7 @@ L'économie est de rang mondiale, elle affectera de la même manière l'ensemble
 
 | \             | Foyers              | Marché                  | Météo              | Politique | Économie | Ville             | Pays              | Monde            |
 |:-:|:------:|:-----:|:----:|:-------:|:------:|:-----:|:---:|:-----:|
-| **Foyers**    | **Message queue**   | **Message queue**       |       X            |     X     |    X     |        ??         |         X         |        X         |
+| **Foyers**    | **Message queue**   | **Message queue**       |       X            |     X     |    X     |      signal       |         X         |        X         |
 | **Marché**    |   Shared memory     |           X             |       X            |     X     |    X     |         X         |         X         |        X         |
 | **Météo**     | (Via ville signal)  |(-> comm via conso foyer)|       X            |     X     |    X     | **Shared memory** |         X         |        X         |
 | **Politique** | (via ville signal)  | **Signal** (via monde)  |       X            |     X     |    X     | (via pays signal) |       signal      | signal (via pays)|
@@ -277,5 +277,4 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
 
 1. Est ce qu'un signal peut se transmettre du fils au père ?
 2. Si on fait de la POO, est ce que l'on doit prendre en compte les relations père fils dans nos communications inter-process ?
-3. Est ce que l'on peut thread les villes qui thread le foyers ?
-4. Est ce qu'on peut fusionner economie et politiques ?
+3. Est ce que l'on peut thread les villes qui thread les foyers ?
