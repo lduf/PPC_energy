@@ -1,7 +1,11 @@
 import Alea
 
 class Economic(Alea) :
-    """Cette classe définit les événements politiques de la simulation"""
+    """Cette classe définit les événements économiques de la simulation
+        TODO : gérer les signaux entre economic et market
+        TODO : créer des événements écon
+
+    """
 
     def __init__(self, risque=8):
         # Définition des éléments statistiques qui peuvent arriver

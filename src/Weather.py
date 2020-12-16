@@ -3,6 +3,14 @@ import random
 
 class Weather:
 
+    """
+        La classe définit la température au cours de notre simulation
+        Elle tire aléatoirement 5 nombres qui sont stockés pour chaque foyer
+        Pour calculer la température du jour, il suffit l'appliquer les coefficients à la fonction de température
+
+        TODO : implémenter une shared memory avec les foyers
+        TODO : réfléchir comment prévenir d'un changement de température
+    """
     def __init__(self, nb_foyers):
         """Constructeur de notre classe"""
         self.nb_foyers = nb_foyers

@@ -2,6 +2,12 @@
 import Politic, Economic, Weather, Home
 
 class Market :
+    """ Classe market qui gère un peu tout le système
+        TODO : créer les processus child pour Politic et Economic (voir pour la communication avec signal)
+        TODO : lancer l'execution en multithread des foyers
+        TODO : implémenter la message queue entre Home.py et Market.py
+
+    """
     def __init__(self, nb_foyer, risque_politique = 7, risque_economique = 5):
 
         self.date = 0 #(date du jour)
