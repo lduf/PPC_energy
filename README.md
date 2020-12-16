@@ -12,14 +12,14 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
  - les consommateurs peuvent céder leur surplus d'énergie aux consommateurs environnants ou de vendre ce surplus ce qui induit une diminution du prix de l'électricité.
  -  Les foyers ayant besoin d'électricité doivent en acheter (sur le marché) s'ils ne peuvent pas en récupérer à un consommateur environnant (en condition de surplus)
  - Le prix de l'énergie augmente quand la consommation devient plus importante que la production
- - Les changements de température (*que je juge périodique*) impactent la consommation (donc le prix)
- - Des évènements aléatoires (nouvelle lois, explosion d'une centrale, …) peuvent affecter le prix de l'énergie
+ - Les changements de température impactent la consommation des foyers en énergie (donc le prix de cette dernière)
+ - Des évènements aléatoires (politiques, économiques ou météorologiques) peuvent affecter le prix de l'énergie
 
 ## 2. Implémentation voulue:
 
 ### Structuration temporelle
 
-Nous décidons de séquencer l'execution de notre programme par journée. Par exemple : la météo d'un foyer est définie pour la journée. Les transactions entre le marché et les foyers peuvent se faire en continue.
+Nous décidons de séquencer l'execution de notre programme par journée. Par exemple : la météo est définie pour la journée. Les transactions entre le marché et les foyers peuvent se faire en continu.
 
 ### Les foyers
 
@@ -31,7 +31,7 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
   2. Toujours vendre sur le marché
   3. Vendre si on ne peut pas donner
 
-  Un foyer pourra donner de l'énergie seulement à ses voisins direct.
+  Un foyer pourra donner de l'énergie seulement à ses voisins direct (les foyers ayant le même argument ville). trop galère ça AH mais on fait comment alors ? +/- 1 dans le tableau
   Implémentations envisagée pour le don d'énergie :
 
   1. Le don se fait de pair à pair, seulement ici nous avons un problème, si un donneur ne trouve pas de receveur, que fait il de l'énergie restante ? est ce qu'il la détruit ? reste-t-il en attente ?
@@ -85,7 +85,7 @@ Exemple d'événement
 | \             | Foyers              | Marché                  | Météo              | Politique | Économie |
 |:-:|:------:|:-----:|:----:|:-------:|:------:|
 | **Foyers**    |   Message queue     | Message queue           |       X            |     X     |    X     |
-| **Marché**    |   X                 |           X             |       X            |     X     |    X     |
+| **Marché**    | Shared memory       |           X             |       X            |     X     |    X     |
 | **Météo**     | Shared memory       |x                        |       X            |     X     |    X     |
 | **Politique** | x                   | Signal                  |       X            |     X     |    X     |
 | **Économie**  | x                   | Signal                  |       X            |     X     |    X     |
@@ -154,7 +154,7 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
 
            1=> génération des n foyers
            2 => génération des processus enfant (Politics, Economics, Météo)
-           3=> While true : gérer les échangent foyers / (appeler les aléas politics economics et météo(calcul de la température en donnant la date) spleep de k secondes entre chaque appel (pour simuler la durée d'une journée)
+           3=> While true : gérer les échanges foyers / (appeler les aléas politics economics et météo(calcul de la température en donnant la date) spleep de k secondes entre chaque appel (pour simuler la durée d'une journée)
            l'éxécution des fonctions du while true se fait dans des threads différents
 
 
