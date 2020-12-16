@@ -96,11 +96,13 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
 **Main**
 
   Un fichier principal gère les différentes classes. Il pose les bases de la simulation.
+  Il lance un thread `Market` et un thread ```Monde```T
 
       Main
 
-          [(String, String)] :: Tableau avec les noms des villes et des pays
-          [Foyers] :: Listes des foyers de la simulation
+          Int :: date du jour
+          Market::  marché de l'énergie
+          Monde:: Monde dans lequel évolue le Market
 
           #set de probabilité
 
@@ -115,18 +117,29 @@ Le monde contient plusieurs pays les pays seront lancés en multiprocess
 
         Monde #process
 
-              Int :: date du jour
-              Economics :: données économiques mondiale
+              Economics :: événements économiques mondiaux
+              #pour chaque date, le monde appelle une fonction d'économie
+              ex: Economics.alea() -> retourne un aléa qui remonte au market ou descend au foyer
+                Si descend à Foyers -> envoie un signal à tous les pays, pour qu'ils transmettent eux mêmes aux villes puis aux foyers
+                Si remonte à Market -> envoie un signal à Monde pour qu'il parle à Market
+
               [Country] :: liste des pays dans le monde
+
+              [Thread]:: Pool de threads qui exécutes des fonctions sur nos pays
 
 *Pays*
 Les pays contiennent plusieurs villes, les villes sont lancées en multiprocess. Les événements politiques sont définis à cette échelle. Ainsi tous les foyers de ce pays ont les mêmes aléas politiques.
 
         Country #process
 
+                Politics :: événements politiques nationaux
+                #pour chaque date, le monde appelle une fonction de politique
+                ex: Politics.alea() -> retourne un aléa qui remonte au market ou descend au foyer
+
+                #Il faut aussi une fonction qui gère la transmission de signal vers le haut ou vers le bas en fonction de la consigne
+
                 String :: nom du pays
                 [Ville] :: liste des villes dans le pays
-                Politics :: Événements politiques de la ville
 
 *Villes*
 Les villes contiennent nos foyers, lancé en multiprocess. La météo est définie à cette échelle. Ainsi tous les foyers de cette ville  sont soumis à la même météo. Définition d'une `shared memory` entre la ville et les foyers. La ville informe les foyers du changement de météo par `signal`
@@ -140,6 +153,7 @@ Les villes contiennent nos foyers, lancé en multiprocess. La météo est défin
               # 1 message queue par ville
               # Dans cette message queue tous les foyers la lise et les foyers qui ont besoin écrivent dans la message queue
               # La lecture de la message queue est systématique.
+
 
 
 
@@ -183,6 +197,14 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
            calculer à nouveau le prix de l'energie et la quantité d'Energie
            # Cette fonction va être lancée par thread
 
+**Aléas**
+
+  Cette classe permet de définir ce qu'est un aléa. Est ce qu'il doit remonter au Market ou descendre au Foyers
+
+        Alea
+
+            type :: Market ou Foyers
+            tuple :: ("Nom de l'éléa",valeur)
 
 **Météo**
 
@@ -209,12 +231,16 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
 
 **Politique**
 
-  Probabilité d'un évènement. Chaque évènement à une probabilité d'apparition et à des conséquences sur le marché. À l'échelle d'un pays
-  Politique et économie sont des ```child process``` du marché. Ils communiquent via ```signal``` au processus parent.
+  Probabilité d'un évènement. Chaque évènement à une probabilité d'apparition et à des conséquences sur le marché ou les foyers. À l'échelle d'un pays
+  Politique et économie sont des ```child process``` du marché (ici des child de child). Ils communiquent via ```signal``` au processus parent.
 
       Politics
 
-              alea
+              function :: genAlea -> tire un random entre 0 et 1000000000
+                  case 1 : return Alea("Foyers","Révolution", 1)
+                  case 2 : return Alea("Market", "Détax", 0.75 )
+                  …
+                  else return Null
 
 
 
@@ -224,3 +250,8 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
    Probabilité d'un évènement. Chaque évènement à une probabilité d'apparition et à des conséquences sur le marché. À l'échelle mondiale
 
       Economics
+
+              function :: genAlea -> tire un random entre 0 et 1000000000
+                  case 1 : return Alea("Market","Crise", -10%)
+                  …
+                  else return Null
