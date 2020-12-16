@@ -278,3 +278,4 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
 1. Est ce qu'un signal peut se transmettre du fils au père ?
 2. Si on fait de la POO, est ce que l'on doit prendre en compte les relations père fils dans nos communications inter-process ?
 3. Est ce que l'on peut thread les villes qui thread les foyers ?
+4. Vaut-il mieux multiplier les signaux ou faire des shared memory ? :/ à voir pcq signal permet d'envoyer qqch que si qqch se passe
