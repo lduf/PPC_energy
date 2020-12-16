@@ -131,16 +131,16 @@ La message queue foyer peut être pensée comme ça : on accepte les types [posi
           # communication par message queue aux foyers voisins en mode 3 ways handshakes :
 
               message dans message queue ("Type ": position, "Message" : quantité d'énergie à donner)
+              Les voisins ACK =>
+              ok : le don m'intéresse
+                    si dispo => je te l'envoie
+                    don plus disponible
+              pas ok :
+                  je ne te l'envoie pas
+                  don dispo
 
-              voisin_gauche []=> message queue ["J'ai trop d'energie tu la veux ?"] type ==> position-1
-                -> oui --> je te donne
-                -> non --> je donne au voisin de droite :
-                voisin_droit => message queue ["J'ai trop d'energie tu la veux ?"] type ==> position +1
-                -> oui --> je te donne
-                -> non --> {
-                  si comportement == donneur  =:> l'énergie est perdue
-                  si comportement == vendeur =:> l'énergie est vendue
-                  }:
+            si on recoit deux pas ok => on peut passer à la suite
+
 
 Voici le processus pour effectuer un don entre deux foyers :
 
