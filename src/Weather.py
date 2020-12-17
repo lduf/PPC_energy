@@ -11,11 +11,11 @@ class Weather:
         TODO : implémenter une shared memory avec les foyers
         TODO : réfléchir comment prévenir d'un changement de température
     """
-    def __init__(self, nb_foyers):
+    def __init__(self, nb_foyers=1):
         """Constructeur de notre classe"""
         self.nb_foyers = nb_foyers
         self.date = 0  # int between 0 and 365 -> to get from Market
-        self.conditions = [self.weather_conditions() for _ in range(self.nb_foyers)]
+        self.conditions = [self.weather_conditions() for _ in range(self.nb_foyers)]  #contient les facteurs pour le calcul de la tempé
         self.temperatures = []
         self.current_temperature() # donne les températures actuelles pour les foyers
 
@@ -26,18 +26,24 @@ class Weather:
         c = random.randint(2, 5)
         d = random.randint(4, 10)
         p = random.randint(7, 10) / 10
-        pass
+        return (a,b,c,d,p)
 
     def temp(self, position):
         (a,b,c,d,p) = self.conditions[position]
         return a*math.cos(p*(math.pi)+8/365*self.date)+b*math.cos(self.date/30)-c*math.cos(self.date/50)+d
 
-    def curent_temperature(self):
+    def current_temperature(self):
         self.temperatures = [self.temp(x) for x in range(self.nb_foyers)]
 
-    def update_date(self):
-        self.date = (self.date+1)%365 # ou self.date = date (qui serait donnnée en argument de la méthode)
-        self.curent_temperature()
+
+    def update_date(self, _, __):
+        self.date +=1# ou self.date = date (qui serait donnnée en argument de la méthode)
+        self.current_temperature()
+                #print(self.temperatures)
+
+    def setup(self):
+        while True:
+            pass
 
 if __name__ == "__main__":
     print('Météo')
