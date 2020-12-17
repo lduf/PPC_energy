@@ -28,7 +28,8 @@ class Market :
         self.current_consommation = 0 # à calculer en accédant à toutes les consommations des homes
         self.current_production = 0  # à calculer en accédant à toutes les productions des homes
         self.total_energie = 0  # à calculer en accédant à toutes les productions des homes
-        self_total_energie_1 = 0
+        self.total_energie_1 = 0
+
     def calc_production(self):
         self.total_energie_1 = self.total_energie
         self.total_energie = 0
