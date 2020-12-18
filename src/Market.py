@@ -19,8 +19,12 @@ class Market :
         self.nb_foyers = nb_foyer
         self.foyers = [Home.Home(i) for i in range(self.nb_foyers)] #Foyer participant au market
         self.wea = Weather.Weather(self.nb_foyers) # météo =>
-        self.pol = Politic.Politic(risque_politique)
-        self.econ =  Economic.Economic(risque_economique)
+        #self.pol = Politic.Politic(risque_politique)
+        self.pol =Process(target=Politic.Politic, args=(risque_politique,))
+        self.pol.start()
+        self.econ =Process(target=Economic.Economic, args=(risque_economique,))
+        self.econ.start()
+        #self.econ =  Economic.Economic(risque_economique)
         self.price = 10 # prix de l'énergie au temps t
         self.price_t = 10 #prix au temps -1
         self.speed = speed #prix au temps -1
@@ -55,28 +59,27 @@ class Market :
         pass
 
     def run(self):
-
         #signaux détournés pour notre usage
-        signal.signal(signal.SIGUSR1, self.pol.genAlea)
-        signal.signal(signal.SIGUSR2, self.econ.genAlea)
-        signal.signal(signal.SIGBUS, self.wea.update_date)
+        #signal.signal(signal.SIGUSR1, self.pol.genAlea)
+        #signal.signal(signal.SIGUSR2, self.econ.genAlea)
+        #signal.signal(signal.SIGBUS, self.wea.update_date)
 
         # lancement des process
-        polProcess = Process(target=self.pol.setup, args=())
-        econProcess = Process(target=self.econ.setup, args=())
-        weatherProcess = Process(target=self.wea.setup, args=())
-        aleaProcesss = [polProcess, econProcess, weatherProcess]
-        for process in aleaProcesss:
-            process.start()
+        #polProcess = Process(target=self.pol.setup, args=())
+        #econProcess = Process(target=self.econ.setup, args=())
+        #weatherProcess = Process(target=self.wea.setup, args=())
+       # aleaProcesss = [polProcess, econProcess, weatherProcess]
+        #for process in aleaProcesss:
+            #process.start()
 
         plt.figure()
         t= [x for x in range(365)]
         prix = []
         energie = []
         while self.date.value < 365 :
-            if self.date.value > 364-1:
-                for process in aleaProcesss:
-                    os.kill(process.pid, signal.SIGKILL)
+            #if self.date.value > 364-1:
+                #for process in aleaProcesss:
+                    #os.kill(process.pid, signal.SIGKILL)
 
 
             # 1. J'aurais préféré utilisé une mémoire partagée pour la date qui marche pour un tick mais bon on doit passer par des signaux
@@ -84,14 +87,19 @@ class Market :
             self.date.value+=1
             #print("##### ####")
             #print("Date du jour : {}".format(self.date.value))
-            os.kill(os.getpid(), signal.SIGUSR1) # on va envoyer nos signaux pour traiter dans les process
-            os.kill(os.getpid(), signal.SIGUSR2) # on va envoyer nos signaux pour traiter dans les process
-            os.kill(os.getpid(), signal.SIGBUS) # on va envoyer nos signaux pour traiter dans les process
+            #os.kill(self.pol.getpid, signal.SIGUSR1) # on va envoyer nos signaux pour traiter dans les process
+            #os.kill(self.econ.getpid, signal.SIGUSR1) # on va envoyer nos signaux pour traiter dans les process
+            #os.kill(os.getpid(), signal.SIGBUS) # on va envoyer nos signaux pour traiter dans les process
             #print("Politic risque : {}".format(self.pol.current_risque))
             #print("Econ risque : {}".format(self.econ.current_risque))
             #print("Météo ville  : {}".format(self.wea.temperatures))
 
-            for key,foyer in enumerate(self.foyers):
+            print("#### {}".format(self.date))
+            print("{} : {}".format(self.pol.name, self.pol.is_alive()))
+            print("{} : {}".format(self.econ.name, self.econ.is_alive()))
+            time.sleep(2)
+
+        """    for key,foyer in enumerate(self.foyers):
                 foyer.temperature = self.wea.temperatures[key]
                 foyer.update()
 
@@ -110,4 +118,4 @@ class Market :
         plt.plot(t, energie)
         plt.title("Quantité de l'énergie")
         plt.grid(True)
-        plt.show()
+        plt.show()"""

@@ -7,11 +7,14 @@ class Alea(object) :
 
     def __init__(self, risque, event):
         # Définition des éléments statistiques qui peuvent arriver
+        signal.signal(signal.SIGUSR1, self.genAlea)
         self.risque = risque if (risque > 4 and risque < 10) else 1
         self.event = event
         self.current_risque = 0
         self.current_alea = ("RAS", 0)
         self.date = 0
+
+        self.setup()
 
     def genAlea(self, signum, frame):
         prob = random.randint(0, 10**self.risque)
