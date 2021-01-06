@@ -11,11 +11,13 @@ class Market :
         TODO : lancer l'execution en multithread des foyers
         TODO : implémenter la message queue entre Home.py et Market.py
         TODO : implémenter buy et sell
+        TODO : refaire calc price
+        TODO : refaire calc production
 
     """
     def __init__(self, nb_foyer=4, speed = 4, risque_politique = 5, risque_economique = 8):
 
-        self.date = Value('i',0) #(date du jour)
+        self.date = Value('i',-1) #(date du jour) Value pour la shared mémory ('i' pour int)
         self.nb_foyers = nb_foyer
         self.foyers = [Home.Home(i) for i in range(self.nb_foyers)] #Foyer participant au market
         self.wea = Weather.Weather(self.nb_foyers) # météo =>
@@ -26,14 +28,16 @@ class Market :
         self.econ.start()
         #self.econ =  Economic.Economic(risque_economique)
         self.price = 10 # prix de l'énergie au temps t
-        self.price_t = 10 #prix au temps -1
-        self.speed = speed #prix au temps -1
+        self.price_t = 10 #prix au temps t-1
+        self.speed = speed #vitesse de la simulation
 
         self.current_consommation = 0 # à calculer en accédant à toutes les consommations des homes
         self.current_production = 0  # à calculer en accédant à toutes les productions des homes
         self.total_energie = 0  # à calculer en accédant à toutes les productions des homes
         self.total_energie_1 = 0
 
+    # TODO à refaire
+    #fait à la va vite sans trop réfléchir
     def calc_production(self):
         self.total_energie_1 = self.total_energie
         self.total_energie = 0
@@ -44,6 +48,8 @@ class Market :
             self.current_consommation += foyer.current_consommation
             self.total_energie+=foyer.stockage
 
+    #TODO à refaire
+    # fait à la va vite sans trop réfléchir
     def calc_price(self):
         etat_reseau = self.current_consommation / self.current_production # facteur qui augmente au diminue le prix en fonction de l'état de la conso/prod
         etat_alea = (self.pol.current_risque + self.econ.current_risque) #somme des composantes polituqes et économiques
@@ -59,45 +65,29 @@ class Market :
         pass
 
     def run(self):
-        #signaux détournés pour notre usage
-        #signal.signal(signal.SIGUSR1, self.pol.genAlea)
-        #signal.signal(signal.SIGUSR2, self.econ.genAlea)
-        #signal.signal(signal.SIGBUS, self.wea.update_date)
 
-        # lancement des process
-        #polProcess = Process(target=self.pol.setup, args=())
-        #econProcess = Process(target=self.econ.setup, args=())
-        #weatherProcess = Process(target=self.wea.setup, args=())
-       # aleaProcesss = [polProcess, econProcess, weatherProcess]
-        #for process in aleaProcesss:
-            #process.start()
-
-        plt.figure()
-        t= [x for x in range(365)]
-        prix = []
-        energie = []
+        #plt.figure()
+        #t= [x for x in range(365)]
+        #prix = []
+        #energie = []
         while self.date.value < 365 :
-            #if self.date.value > 364-1:
-                #for process in aleaProcesss:
-                    #os.kill(process.pid, signal.SIGKILL)
-
-
             # 1. J'aurais préféré utilisé une mémoire partagée pour la date qui marche pour un tick mais bon on doit passer par des signaux
-            # 2. je ne sais pas pourquoi mais ça ne marche pas de faire un os.kill(child_id, signal.SIGUSR1) (genre meme en disant qu'on intercepte le signal celui ci n'est pas intercepté)
-            self.date.value+=1
-            #print("##### ####")
-            #print("Date du jour : {}".format(self.date.value))
-            #os.kill(self.pol.getpid, signal.SIGUSR1) # on va envoyer nos signaux pour traiter dans les process
-            #os.kill(self.econ.getpid, signal.SIGUSR1) # on va envoyer nos signaux pour traiter dans les process
-            #os.kill(os.getpid(), signal.SIGBUS) # on va envoyer nos signaux pour traiter dans les process
+
+            print("##### ####")
+            print("Date du jour : {}".format(self.date.value))
+            print("{} : {}".format(self.pol.name, self.pol.is_alive()))
+            print("{} : {}".format(self.econ.name, self.econ.is_alive()))
+
+            if(self.date.value >= 0):
+                os.kill(self.pol.pid, signal.SIGUSR1) # on va envoyer nos signaux pour traiter dans les process
+                os.kill(self.econ.pid, signal.SIGUSR1) # on va envoyer nos signaux pour traiter dans les process
+
             #print("Politic risque : {}".format(self.pol.current_risque))
             #print("Econ risque : {}".format(self.econ.current_risque))
             #print("Météo ville  : {}".format(self.wea.temperatures))
 
-            print("#### {}".format(self.date))
-            print("{} : {}".format(self.pol.name, self.pol.is_alive()))
-            print("{} : {}".format(self.econ.name, self.econ.is_alive()))
-            time.sleep(2)
+            self.date.value += 1
+            time.sleep(2)#self.sleep
 
         """    for key,foyer in enumerate(self.foyers):
                 foyer.temperature = self.wea.temperatures[key]

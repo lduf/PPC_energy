@@ -44,7 +44,7 @@ class Home:
         if self.temperature > 12  and self.temperature <= 18: self.current_consommation*=1.15
         if self.temperature > 18  and self.temperature <= 22: self.current_consommation*=1
         if self.temperature > 22  and self.temperature <= 24: self.current_consommation*=0.75
-        if self.temperature > 24  and self.temperature <= 30: self.current_consommation*=0.9
+        if self.temperature > 24  and self.temperature <= 30: self.current_consommation*=0.9 #Ventilateurs et clim
         if self.temperature > 30  and self.temperature <= 34: self.current_consommation*=1
         if self.temperature > 34  : self.current_consommation*=1.2
 
@@ -55,7 +55,7 @@ class Home:
         if energie > 0 :
             self.stockage =  self.stockage+energie if self.stockage+energie < self.stockage_max else self.stockage_max
         else :
-            self.stockage = self.stockage + energie
+            self.stockage = self.stockage + energie #pour soustraire de l'énergie
 
 
 
