@@ -2,7 +2,9 @@ import random
 import os, signal
 
 class Alea(object) :
-    """Cette classe définit les événements  de la simulation"""
+    """Cette classe définit les événements  de la simulation
+        TODO :  communiquer de Alea à Market
+    """
 
     def __init__(self, risque, event):
         # Définition des éléments statistiques qui peuvent arriver
@@ -14,7 +16,7 @@ class Alea(object) :
         self.setup()
 
     def genAlea(self, signum, frame):
-            print("Date du jour {}".format(self.date))
+            #print("Date du jour {}".format(self.date))
             prob = random.randint(0, 10**self.risque)
             if prob in self.event:
                 self.current_alea = self.event[prob]
@@ -25,7 +27,6 @@ class Alea(object) :
 
     def setup(self):
         signal.signal(signal.SIGUSR1, self.genAlea)  # il choppe le sigusr1 et lance genAlea
-        print(signal.getsignal(signal.SIGUSR1))
         while True:
             pass
 

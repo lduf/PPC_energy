@@ -10,6 +10,7 @@ class Economic(Alea.Alea) :
         # Définition des éléments statistiques qui peuvent arriver
         event = {
             1 : ("Taux de change", 0.5),
-            2 : ("Un event random", -0.7)
+            2 : ("Un event random", -0.7),
+            3 : ("Crise de ouf", -2)
         }
         super(Economic, self).__init__(risque = risque, event = event)

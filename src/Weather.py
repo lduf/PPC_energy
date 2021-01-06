@@ -1,6 +1,7 @@
 import math
 import random
-
+from multiprocessing import shared_memory
+from multiprocessing.managers import SharedMemoryManager
 class Weather:
 
     """
@@ -18,6 +19,11 @@ class Weather:
         self.conditions = [self.weather_conditions() for _ in range(self.nb_foyers)]  #contient les facteurs pour le calcul de la tempé
         self.temperatures = []
         self.current_temperature() # donne les températures actuelles pour les foyers
+        #sm = SharedMemoryManager()
+        #sm.start()
+        #shared_temperature = sm.ShareableList(self.temperatures, name='current_temperature')
+
+
 
 
     def weather_conditions(self):
