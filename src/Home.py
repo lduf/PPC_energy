@@ -3,9 +3,28 @@ import sysv_ipc
 import sys, os
 class Comportement :
     DONNEUR = 1
-    VENDEUR = 2
+    VENDEUR = 15
     NEUTRE = 3
+    def __init__(self):
+        prob = random.randint(0, 100)
+        if prob <= 10: #10%
+            self.comportement = self.DONNEUR
+        elif prob > 10 and prob < 80: #70%
+            self.comportement = self.NEUTRE
+        else : #20%
+            self.comportement = self.VENDEUR
+    def taux_conso(self):
+        """Permet de retourner un taux de consommation aléatoire basé sur le comportement"""
+        return random.randint(80, 700)
 
+    def taux_prod(self):
+        """Permet de retourner un taux de consommation aléatoire basé sur le comportement
+            Dans l'idée les vendeurs produisent bcp bcp plus
+        """
+        return self.comportement * random.randint(0,500)
+
+    def stockage(self):
+        return self.comportement * random.randint(0,500)/20 * random.randint(3, 10)*(16-self.comportement)
 
 class Home:
 
@@ -25,33 +44,68 @@ class Home:
             print("Cannot connect to message queue", 12, ", terminating NOW.")
             sys.exit(1)
         self.ppid = os.getppid()
-        self.m = str(self.ppid).encode()
+        self.m = str(self.ppid).encode() #VOIR AVEC MATHIS
+        #Idée faire une message queue inter home
         self.position = position
-        self.taux_consommation = random.randint(80,700)
+        self.comportement = Comportement()
+        self.taux_consommation = self.comportement.taux_conso()
         self.current_consommation = self.taux_consommation
-        self.taux_production = random.randint(200,1000)
-        self.stockage_max = 10000
-        self.stockage = 100
+        self.taux_production = self.comportement.taux_prod()
+        self.stockage_max = self.comportement.stockage()
+        self.stockage = self.stockage_max/10
 
         self.state = {
             "conso" : self.current_consommation,
             "prod" : self.taux_production,
-            "stock" : self.stockage
+            "stock" : self.stockage,
+            "id" : self.position
         }
         self.argent = 0
-        self.comportement = Comportement()
+
         self.date = 0
         self.temperature = 0
 
         self.setup(date)
 
-    def buy(self):
+    def send(self, need):
+        """Gère l'envoie d'une certaine quantité d'énergie en fonction du critère du foyer (Donneur, vendeur ou neutre"""
         pass
+        if self.comportement.comportement == Comportement.DONNEUR:
+            self.give(need)
+            pass
+        if self.comportement.comportement == Comportement.VENDEUR:
+            self.sell(need)
+            pass
+        if self.comportement.comportement == Comportement.NEUTRE:
+            if not self.give(need) :
+                self.sell(need)
+            pass
 
-    def sell(self):
-        pass
 
-    def give(self):
+    def buy(self, need):
+        """Fonction d'achat d'énergie sur le market, déclanchée quand la quantité d'énergie dans le stock devient négative"""
+        needs = {
+            "id": self.position,
+            "goal": "buy",
+            "needs": need
+        }
+        m = str(needs).encode()
+        self.mq.send(m, self.position)
+        #pass
+
+    def sell(self, need):
+        """Fonction de vente d'énergie sur le market, déclanchée quand la quantité d'énergie dans le stock est supérieur au stockage max"""
+        needs = {
+            "id": self.position,
+            "goal": "sell",
+            "needs": need
+        }
+        m = str(needs).encode()
+        self.mq.send(m, self.position)
+        #pass
+
+    def give(self, need):
+        """Retourne un booléan => TRUE s'il a pu donnner FALSE sinon"""
         pass
 
     def actionMeteo(self):
@@ -71,17 +125,24 @@ class Home:
         self.actionMeteo()
         energie = self.taux_production - self.taux_consommation
         if energie > 0 :
-            self.stockage =  self.stockage+energie if self.stockage+energie < self.stockage_max else self.stockage_max
+            if self.stockage+energie <= self.stockage_max :
+                self.stockage = self.stockage + energie
+            else:
+                self.send(self.stockage+energie - self.stockage_max)
+                self.stockage = self.stockage_max
         else :
-            self.stockage = self.stockage + energie #pour soustraire de l'énergie
+            if self.stockage + energie < 0 :
+                self.buy(energie)
+            else :
+                self.stockage = self.stockage + energie #pour soustraire de l'énergie
 
-        self.state = {
-            "conso": self.current_consommation,
-            "prod": self.taux_production,
-            "stock": self.stockage
-        }
+        self.state["conso"] = self.current_consommation
+        self.state["prod"] = self.taux_production
+        self.state["stock"] = self.stockage
 
     def send_data(self):
+        state = self.state
+        state["goal"] = "state"
         m = str(self.state).encode()
         self.mq.send(m,self.position)
 
