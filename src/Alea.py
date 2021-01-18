@@ -1,5 +1,6 @@
 import random
 import os, signal
+import time
 
 class Alea(object) :
     """Cette classe définit les événements  de la simulation
@@ -16,7 +17,7 @@ class Alea(object) :
         self.setup()
 
     def genAlea(self, signum, frame):
-            #print("Date du jour {}".format(self.date))
+            print("QQCH DANS ALEAO Date du jour {}".format(self.date))
             prob = random.randint(0, 10**self.risque)
             if prob in self.event:
                 self.current_alea = self.event[prob]
@@ -27,6 +28,7 @@ class Alea(object) :
 
     def setup(self):
         signal.signal(signal.SIGUSR1, self.genAlea)  # il choppe le sigusr1 et lance genAlea
+        #time.sleep(6)
         while True:
             pass
 
