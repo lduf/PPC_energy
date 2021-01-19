@@ -19,7 +19,7 @@ Le programme simule le marché de l'énergie : la production d'énergie, la cons
 
 ### Structuration temporelle
 
-Nous décidons de séquencer l'execution de notre programme par journée. Par exemple : la météo est définie pour la journée. Les transactions entre le marché et les foyers peuvent se faire en continu.
+Nous décidons de séquencer l'execution de notre programme par journées. Par exemple : la météo est définie pour la journée. Les transactions entre le marché et les foyers peuvent se faire en continu.
 
 ### Les foyers
 
@@ -51,22 +51,14 @@ Nous décidons de séquencer l'execution de notre programme par journée. Par ex
  La politique est un processus fils de `market` et communique avec ce dernier via `signal`
  Exemple d'événement :
 
- 1. Révolution : chute de 20% des prix
+ 1. Attaque du capitole = +7 au prix de l'energie
 
 ### Economie
 
 La politique est un processus fils de `market` et communique avec ce dernier via `signal`
-Exemple d'événement
+Exemple d'événement :
 
- 1. Une crise
- 2.
-
-### Bug sur l'interprétation de cette phrase :
-
- >"home and market processes update terminals they are connected to permitting the operator of the simulation to track its progress"
-
- En gros on a des retours terminal sur home et market ?
- Gestion de l'affichage sur un terminal extérieur
+1. Stimulus check = -5 prix de l'energie
 
 ### Prix de l'énergie
 
@@ -83,7 +75,7 @@ Exemple d'événement
 | \             | Foyers              | Marché                  | Météo              | Politique | Économie |
 |:-:|:------:|:-----:|:----:|:-------:|:------:|
 | **Foyers**    |   Message queue     | Message queue           |       X            |     X     |    X     |
-| **Marché**    | Shared memory       |           X             |       X            |     X     |    X     |
+| **Marché**    | Message queue       |           X             |       X            |     X     |    X     |
 | **Météo**     | Shared memory       |x                        |       X            |     X     |    X     |
 | **Politique** | x                   | Signal                  |       X            |     X     |    X     |
 | **Économie**  | x                   | Signal                  |       X            |     X     |    X     |
@@ -149,8 +141,8 @@ Voici le processus pour effectuer un don entre deux foyers :
 
 **Marché**
 
-Semaphore pour locker les x transactions simultanées.  
-Thread interne au marché : des Fred comptables pour accueillir les zoulous de la file d'attente (`message queue`) qui vient des foyers
+join() d'une Queue pour attendre les transactions,
+Thread interne au marché : des Freds comptables pour accueillir les zoulous de la file d'attente (`message queue`) qui vient des foyers
 
       Market
 
@@ -214,8 +206,6 @@ Thread interne au marché : des Fred comptables pour accueillir les zoulous de l
                   case 2 : return ("Détax", 0.75 )
                   …
                   else return Null
-
-
 
 
 **Économie**
