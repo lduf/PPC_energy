@@ -10,7 +10,7 @@ class Politic(Alea.Alea):
     def __init__(self, risque=2):
         # Définition des éléments statistiques qui peuvent arriver
         event = {
-            4: ("WW3", 10.0, signal.SIGALRM),
+            4: ("WW3", 10.0, signal.SIGTRAP),
             5: ("Scandale aux USA", 3.0, signal.SIGCONT),
             6: ("Attaque du capitole", 6.0, signal.SIGPIPE)
         }
