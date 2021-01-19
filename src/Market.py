@@ -18,7 +18,7 @@ class Market:
         TODO : refaire calc production
     """
 
-    def __init__(self, nb_foyer=4, speed=4, risque_politique=5, risque_economique=8):
+    def __init__(self, nb_foyer=4, speed=4, risque_politique=1, risque_economique=1):
 
         self.Enelock = threading.Lock()
         self.fifoLock = threading.Lock()
@@ -33,17 +33,25 @@ class Market:
         except sysv_ipc.ExistentialError:
             print("Message queue", 12, "already exsits, terminating.")
             sys.exit(1)
-
+        try:
+            self.sm = sysv_ipc.SharedMemory(10, flags=sysv_ipc.IPC_CREX, mode =0o660)
+        except sysv_ipc.ExistentialError:
+            print("Message queue", 10, "already exsits, terminating.")
+            sys.exit(1)
         self.wea = Process(target=Weather.Weather, args=(self.nb_foyers,))
         self.pol = Process(target=Politic.Politic, args=(risque_politique,))
         self.econ = Process(target=Economic.Economic, args=(risque_economique,))
         self.event_list = {
-            30 : ("Taux de change", 0.5),
-            31 : ("Un event random", -0.7),
-            10 : ("Crise de ouf", -2),
-            14: ("Guerre", -0.5),
-            19: ("Scandale aux USA", -0.7),
-            13: ("Attaque du capitole", -0.9)
+            "economic":{
+                30: ("Taux de change", 0.5),
+                31: ("Un event random", -0.7),
+                10: ("Crise de ouf", -2),
+            },
+            "politic":{
+                14: ("Guerre", -0.5),
+                19: ("Scandale aux USA", -0.7),
+                13: ("Attaque du capitole", -0.9)
+            }
         }
         self.e_current_risque = 0.1
         self.p_current_risque = 0.1
@@ -159,10 +167,12 @@ class Market:
     def newDate(self):
 
         ## Nouvelle date => on augmente la date, on sig nos child
-
+        print("Ceci est une nouvelle date happy new day !")
         if (self.date.value >= 0):
+            print("J'envoie des sigusr1 à aléa")
             os.kill(self.pol.pid, signal.SIGUSR1)  # on va envoyer nos signaux pour traiter dans les process
             os.kill(self.econ.pid, signal.SIGUSR1)  # on va envoyer nos signaux pour traiter dans les process
+            os.kill(self.wea.pid, signal.SIGUSR1)  # on va envoyer nos signaux pour traiter dans les process
         self.date.value += 1
 
         ## On remet à jour nos datas
@@ -171,7 +181,14 @@ class Market:
         self.current_production = 0
 
     def events(self, signum, frame):
-        self.e_current_risque = self.event_list[signum][1]
+        # évenet poli
+        if signum in self.event_list["politic"] :
+            self.e_current_risque = self.event_list["politic"][signum][1]
+            print("p_current_risque :", self.p_current_risque)
+        elif signum in self.event_list["economic"]:
+            #evenement eco
+            self.e_current_risque = self.event_list["economic"][signum][1] #il faut qu'on gère les p_current_riisque aussii
+            print("e_current_risque :",self.e_current_risque)
         """if type == 0:
             self.e_current_risque = risque
         elif type == 1:
@@ -179,6 +196,7 @@ class Market:
 
     def kill(self, signum, frame):
         self.mq.remove()
+        self.sm.remove()
 
     def run(self):
 
@@ -194,13 +212,13 @@ class Market:
             print("Prix de l'énergie hier : {}".format(self.price_1))
             print("Prix de l'énergie : {}".format(self.price))
             self.calc_price()
-            signal.signal(signal.SIGUSR1, self.events)
-            signal.signal(signal.SIGUSR2, self.events)
-            signal.signal(signal.SIGBUS, self.events)
-            signal.signal(signal.SIGALRM, self.events)
-            signal.signal(signal.SIGCONT, self.events)
-            signal.signal(signal.SIGPIPE, self.events)
-            signal.signal(signal.SIGINT, self.kill)
+            signal.signal(signal.SIGUSR1, self.events)#je croi s qu'on a pas besoin de le mettre dans un while true
+            signal.signal(signal.SIGUSR2, self.events)#je croi s qu'on a pas besoin de le mettre dans un while true
+            signal.signal(signal.SIGBUS, self.events)#je croi s qu'on a pas besoin de le mettre dans un while true
+            signal.signal(signal.SIGALRM, self.events)#je croi s qu'on a pas besoin de le mettre dans un while true
+            signal.signal(signal.SIGCONT, self.events)#je croi s qu'on a pas besoin de le mettre dans un while true
+            signal.signal(signal.SIGPIPE, self.events)#je croi s qu'on a pas besoin de le mettre dans un while true
+            signal.signal(signal.SIGINT, self.kill)#je croi s qu'on a pas besoin de le mettre dans un while true
             # self.pool.close()
             # self.pool.join()
             time.sleep(1)  # voir doc c'est normal https://docs.python.org/fr/3/library/multiprocessing.html#multiprocessing.Queue
@@ -209,6 +227,7 @@ class Market:
             # time.sleep(2)#self.sleep
 
         self.mq.remove()
+        self.sm.remove()
 
         """    for key,foyer in enumerate(self.foyers):
                 foyer.temperature = self.wea.temperatures[key]

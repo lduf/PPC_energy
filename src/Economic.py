@@ -5,7 +5,7 @@ class Economic(Alea.Alea) :
 
     """
 
-    def __init__(self, risque=8):
+    def __init__(self, risque=2):
         # Définition des éléments statistiques qui peuvent arriver
         event = {
             1 : ("Taux de change", 0.5, signal.SIGUSR1),

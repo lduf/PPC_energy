@@ -5,7 +5,7 @@ class Politic(Alea.Alea) :
 
     """
 
-    def __init__(self, risque=8):
+    def __init__(self, risque=2):
         # Définition des éléments statistiques qui peuvent arriver
         event = {
             4 : ("Guerre", -0.5, signal.SIGALRM),

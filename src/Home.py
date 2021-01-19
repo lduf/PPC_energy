@@ -35,15 +35,21 @@ class Home:
         Classe Home simule les foyers qui produisent et qui consomment de l'énergie
 
         TODO : implémenter une shared memory (ou mieux ?) pour mettre à jour la consommation par rapport à la météo
-        TODO : implémenter buy, sell, give
     """
     def __init__(self, position, position_max, date):
         """Constructeur de notre classe Home"""
+        try:
+            self.sm = sysv_ipc.SharedMemory(10)
+        except sysv_ipc.ExistentialError:
+            print("Foyer {} Cannot connect to shared Memory 10 terminating NOW. \b {} ".format(position, sysv_ipc.ExistentialError))
+            sys.exit(1)
         try:
             self.mq = sysv_ipc.MessageQueue(12)
         except sysv_ipc.ExistentialError:
             print("Cannot connect to message queue", 12, ", terminating NOW.")
             sys.exit(1)
+
+
         self.ppid = os.getppid()
         self.m = str(self.ppid).encode() #VOIR AVEC MATHIS
         #Idée faire une message queue inter home
@@ -127,8 +133,8 @@ class Home:
         self.mq.send(m, type=(2000+self.position_after))# on envoie la proposition de don à la maison de droite
 
     #Peut être que ça merde ici
-        mB,tB =  self.mq.receive(type=(3000+self.position_before)) # messageBefore (mb) typeBefore (tb) -> réponse associée à la proposition, type 3000 une fois le contact bien mené
-        mA,tA = self.mq.receive(type=(3000+self.position_after))
+        mB,tB =  self.mq.receive(type=(3000+self.position)) # type 3000 une fois le contact bien mené
+        mA,tA = self.mq.receive(type=(3000+self.position))
 
 
         mA = ast.literal_eval(mA.decode())
@@ -146,9 +152,9 @@ class Home:
             needs["needs"] = min(abs(need), abs(order[i]["ack"]))
             self.mq.send(str(needs).encode(), type=(3000+order[i]["id"]))
             if i < len(order)-1:
-                needs-=order[i]["needs"]
+                need-=abs(float(needs["needs"]))
 
-        return needs
+        return need
 
     def handle_giveMessage(self, mess):
         print("•••••• {} veut me donner {}".format(mess["id"], mess["needs"]))
@@ -166,6 +172,9 @@ class Home:
 
 
     def actionMeteo(self):
+        meteo = eval(self.sm.read().decode())
+        self.temperature = meteo[self.position]
+        print("Foyer {} : température actuelle : {}".format(self.position, self.temperature))
         self.current_consommation = self.taux_consommation
         if self.temperature <= 0 : self.current_consommation*=1.5
         if self.temperature > 0  and self.temperature <= 12: self.current_consommation*=1.3

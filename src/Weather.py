@@ -1,7 +1,8 @@
+import sys
+import signal
 import math
 import random
-from multiprocessing import shared_memory
-from multiprocessing.managers import SharedMemoryManager
+import sysv_ipc
 class Weather:
 
     """
@@ -18,8 +19,14 @@ class Weather:
         self.date = 0  # int between 0 and 365 -> to get from Market
         self.conditions = [self.weather_conditions() for _ in range(self.nb_foyers)]  #contient les facteurs pour le calcul de la tempé
         self.temperatures = []
-        self.current_temperature() # donne les températures actuelles pour les foyers
-        #sm = SharedMemoryManager()
+        try:
+            self.sm = sysv_ipc.SharedMemory(10)
+        except sysv_ipc.ExistentialError:
+            print("Méteo Cannot connect to shared Memory", 10, ", terminating NOW.")
+            sys.exit(1)
+        self.current_temperature()  # donne les températures actuelles pour les foyers
+        self.setup()
+
         #sm.start()
         #shared_temperature = sm.ShareableList(self.temperatures, name='current_temperature')
 
@@ -40,14 +47,17 @@ class Weather:
 
     def current_temperature(self):
         self.temperatures = [self.temp(x) for x in range(self.nb_foyers)]
+        self.sm.write(str(self.temperatures).encode())
 
 
-    def update_date(self, _, __):
+    def update_date(self, signum, frame):
+        print("METOOOO NEW DATEEEE")
         self.date +=1# ou self.date = date (qui serait donnnée en argument de la méthode)
         self.current_temperature()
                 #print(self.temperatures)
 
     def setup(self):
+        signal.signal(signal.SIGUSR1, self.update_date)
         while True:
             pass
 
