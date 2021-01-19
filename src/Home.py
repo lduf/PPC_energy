@@ -10,7 +10,7 @@ import os
 class Comportement:  # classe gérant le comportement des foyers (valeurs d'équilibrage)
 
     # valeurs déquilibrage pour les proba dêtre vendeur acheteur ou donneur
-    DONNEUR = 2
+    DONNEUR = 3
     VENDEUR = 14
     NEUTRE = 3
 
@@ -130,26 +130,26 @@ class Home:
         self.mq.send(m, self.position)
 
     def give(self, need):
-        """Retourne un booléan => TRUE s'il a pu donnner FALSE sinon"""
+        """Retourne un booléan => TRUE s'il a pu donner FALSE sinon"""
 
-        needs = {
+        needs = { # message résumant l'offre
             "id": self.position,
             "goal": "give",
             "needs": abs(need),
             "state": 0
         }
-        m = str(needs).encode()
+        m = str(needs).encode() # on encode
 
         self.mq.send(m, type=(2000 + self.position_before))  # on envoie la proposition de don au foyer de gauche, type 2000 pour premiere communication
         self.mq.send(m, type=(2000 + self.position_after))  # on envoie la proposition de don au foyer de droite
 
-        # Peut être que ça merde ici
-        mB, tB = self.mq.receive(type=(3000 + self.position))  # type 3000 une fois le contact bien mené
+        mB, tB = self.mq.receive(type=(3000 + self.position))  # type 3000 une fois le contact bien mené, on récupère les réponse (2 ème partie du three way handshake) des deux voisins
         mA, tA = self.mq.receive(type=(3000 + self.position))
 
-        mA = ast.literal_eval(mA.decode())
+        mA = ast.literal_eval(mA.decode()) # decode en dico
         mB = ast.literal_eval(mB.decode())
 
+        # renvois de l'ack bien formaté
         needs["state"] = 2
         needs["id"] = self.position
         if "ack" in mA and "ack" in mB:
@@ -158,8 +158,7 @@ class Home:
             else:
                 order = [mB, mA]
             print("Ordre de don : {} ".format(order))
-            for i in range(0, len(
-                    order)):  # On envoie l'energie qu'on a aux voisins en donnnant en priorité à celui qui en a le plus besoin
+            for i in range(0, len(order)):  # On envoie l'energie qu'on a aux voisins en donnnant en priorité à celui qui en a le plus besoin
                 needs["needs"] = min(abs(need), abs(order[i]["ack"]))
                 self.mq.send(str(needs).encode(), type=(3000 + order[i]["id"]))
                 if i < len(order) - 1:

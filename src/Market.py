@@ -24,7 +24,7 @@ class Market:
         self.Enelock = threading.Lock()  # Les deux locks dont on aura besoin
         self.fifoLock = threading.Lock()
 
-        self.date = Value('i', -1)  # (date du jour) Value pour la shared mémory ('i' pour int)
+        self.date = Value('i', -1)  # (date du jour) Value pour la shared memory ('i' pour int)
         self.nb_foyers = nb_foyer  # Nb de foyers
         self.foyers = [threading.Thread(target=Home.Home, args=(i, self.nb_foyers - 1, self.date,)) for i in range(self.nb_foyers)]  # On lance un thread par foyer participant au market
         try:
@@ -89,10 +89,9 @@ class Market:
 
     def handle_data(self): # Véronique la secrétaire prend la tdolist donnée par Gérard son manager. Elle appelle son armée de Fred comptable qui gère les éléments qu'elle transmets
         print("HANDLE DATA IS RUNNING")
-        # with self.Enelock():
         while True:
-            # with self.FifoLock():
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:  # pool de thread qui tournent en continu pour traiter les data
+                # with self.fifoLock:
                 data = self.dataQueue.get()  # on sort une data de la queue
                 if "goal" in data:  # si la data contient bien une intention
                     goal = data["goal"]  # on demande le but de la data
@@ -103,8 +102,8 @@ class Market:
                     if goal == "sell":
                         executor.submit(self.sell(data))
                     if goal == "work_done":
-                        self.dataQueue.task_done()
-                        self.dataQueue.task_done()
+                        self.dataQueue.task_done()#pour la première communicaiton (state qui reste ouverte pour bloquer tant qu'on a pas recu le work_done)
+                        self.dataQueue.task_done()# pour le work_done
                         print("~~~ Taches encore en cours : {}".format(self.dataQueue.unfinished_tasks))
 
     def calc_production(self, data_cons): # Ici on traite les données d'état envoyés par les homes contenant leur production et leur consommation
@@ -127,9 +126,9 @@ class Market:
                 pass  # error
             else: # sinon on met la data dans la queue d'execution que handle_data va traiter
                 #print("Data received {}".format(data))
-                # with self.fifoLock:
+                #with self.fifoLock:
                 self.dataQueue.put(data)
-                # print("Taille de ma queue {} : ".format(self.dataQueue.qsize()))
+                # print("Taille de ma queue  {} : ".format(self.dataQueue.qsize()))
 
     def calc_price(self):
         etat_reseau = self.current_consommation / (self.current_production)  # facteur qui augmente ao diminue le prix en fonction de l'état de la conso/prod
@@ -151,8 +150,8 @@ class Market:
         print("____total_energie_tour_suivant : {} _______".format(total_energie_tour_suivant))
         print("____energieTotalFactor : {} _______".format(energieTotalFactor))
         print("____ Modulataion du prix : {} _______".format((1 / 50) * etat_reseau * self.price_1 * energieTotalFactor))
-
         print("_______________________________________________")
+
     def buy(self, data): #fonction qui gère les achats
         # with self.Enelock :
         #print(" \t \t • {} achète de l'énergie \n".format(data["id"]))
@@ -228,11 +227,11 @@ class Market:
         signal.signal(signal.SIGTRAP, self.events)
         signal.signal(signal.SIGCONT, self.events)
         signal.signal(signal.SIGPIPE, self.events)
-        signal.signal(signal.SIGINT, self.kill) # lance kill sur le Ctrl+c
-        signal.signal(signal.SIGALRM, self.timeout_handler) # lance kill sur le Ctrl+c
+        signal.signal(signal.SIGINT, self.kill)  # lance kill sur le Ctrl+c
+        signal.signal(signal.SIGALRM, self.timeout_handler)  # lance kill sur le Ctrl+c
         t = []
         price = []
-        while self.date.value < self.nb_jours: # fait tourner la simul sur nb_jour
+        while self.date.value < self.nb_jours:  # fait tourner la simul sur nb_jour
             print("\n\n\n#####Jour n°{}####".format(self.date.value))
 
             print("État de la dispo de l'énergie : {}".format(self.total_energie))
@@ -241,11 +240,16 @@ class Market:
             print("Prix de l'énergie : {}".format(self.price))
             print("\n\n")
 
-            time.sleep(0.8)  # voir doc c'est normal https://docs.python.org/fr/3/library/multiprocessing.html#multiprocessing.Queue
-            signal.alarm(1)
+            time.sleep(2)  # voir doc c'est normal https://docs.python.org/fr/3/library/multiprocessing.html#multiprocessing.Queue
+            signal.alarm(3)
             try:
                 self.dataQueue.join()  # on join la data queue (contenant les intructions à effectuer), ainsi on wait que toutes les instructions soient passées
             except TimeoutException:
+                #self.dataQueue.clear()
+                try :
+                    [self.dataQueue.task_done() for _ in range(self.dataQueue.unfinished_tasks)]
+                except :
+                    pass
                 pass
             self.calc_price()  # on calcule le nouveau prix de l'energie
             t.append(self.date.value)

@@ -13,7 +13,7 @@ class Weather:
         Pour calculer la température du jour, il suffit l'appliquer les coefficients à la fonction de température
 
     """
-    def __init__(self, nb_foyers=1):
+    def __init__(self, nb_foyers=4):
         """Constructeur de notre classe"""
 
         print("FIRST THING IN METEO")
@@ -22,7 +22,7 @@ class Weather:
         self.conditions = [self.weather_conditions() for _ in range(self.nb_foyers)]  # contient les facteurs pour le calcul de la tempé
         self.temperatures = []
         try:
-            self.sm = sysv_ipc.SharedMemory(10)
+            self.sm = sysv_ipc.SharedMemory(10) # on se connecte à la shared memory
         except sysv_ipc.ExistentialError:
             print("Méteo Cannot connect to shared Memory", 10, ", terminating NOW.")
             sys.exit(1)

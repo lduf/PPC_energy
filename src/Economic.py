@@ -4,7 +4,6 @@ import signal
 
 class Economic(Alea.Alea):
     """Cette classe définit les événements économiques de la simulation
-
     """
 
     def __init__(self, risque=2):

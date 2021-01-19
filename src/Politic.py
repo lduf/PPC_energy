@@ -3,7 +3,8 @@ import signal
 
 
 class Politic(Alea.Alea):
-    """Cette classe définit les événements politiques de la simulation
+    """
+        Cette classe définit les événements politiques de la simulation
 
     """
 
