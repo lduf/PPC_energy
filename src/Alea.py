@@ -4,7 +4,6 @@ import time
 
 class Alea(object) :
     """Cette classe définit les événements  de la simulation
-        TODO :  communiquer de Alea à Market
     """
 
     def __init__(self, risque, event):
@@ -31,19 +30,6 @@ class Alea(object) :
             self.current_risque = self.current_alea[1]
             print("risque:",self.current_risque)
             self.date +=1
-
-            """if self.current_risque == 1:
-                os.kill(self.ppid, signal.SIGUSR1)
-            elif self.current_risque == 2:
-                os.kill(self.ppid, signal.SIGUSR2)
-            elif self.current_risque == 3:
-                os.kill(self.ppid, signal.SIGBUS)
-            elif self.current_risque == 4:
-                os.kill(self.ppid, signal.SIGALRM)
-            elif self.current_risque == 5:
-                os.kill(self.ppid, signal.SIGCONT)
-            elif self.current_risque == 6:
-                os.kill(self.ppid, signal.SIGPIPE)"""
 
     def setup(self):
         print("47 terr j'écouteeeeeee x1")
