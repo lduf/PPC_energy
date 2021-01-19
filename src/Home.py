@@ -1,21 +1,24 @@
+import ast
 import random
+import threading
+
 import sysv_ipc
 import sys, os
 class Comportement :
-    DONNEUR = 1
-    VENDEUR = 15
+    DONNEUR = 6
+    VENDEUR = 10
     NEUTRE = 3
     def __init__(self):
         prob = random.randint(0, 100)
-        if prob <= 10: #10%
+        if prob <= 50: #10%
             self.comportement = self.DONNEUR
-        elif prob > 10 and prob < 80: #70%
+        elif prob > 50 and prob < 80: #70%
             self.comportement = self.NEUTRE
         else : #20%
             self.comportement = self.VENDEUR
     def taux_conso(self):
         """Permet de retourner un taux de consommation aléatoire basé sur le comportement"""
-        return random.randint(80, 700)
+        return 2*random.randint(80, 700)
 
     def taux_prod(self):
         """Permet de retourner un taux de consommation aléatoire basé sur le comportement
@@ -24,19 +27,17 @@ class Comportement :
         return self.comportement * random.randint(0,500)
 
     def stockage(self):
-        return self.comportement * random.randint(0,500)/20 * random.randint(3, 10)*(16-self.comportement)
+        return self.comportement * random.randint(0,500)/20 * random.randint(3, 10)*(self.VENDEUR+1-self.comportement)
 
 class Home:
 
     """
         Classe Home simule les foyers qui produisent et qui consomment de l'énergie
 
-        TODO : générer aléatoirement les taux de prod / conso / …
-        TODO : implémenter une message queue pour communiquer avec le Market
-        TODO : implémenter une shared memory pour mettre à jour la consommation par rapport à la météo
+        TODO : implémenter une shared memory (ou mieux ?) pour mettre à jour la consommation par rapport à la météo
         TODO : implémenter buy, sell, give
     """
-    def __init__(self, position, date):
+    def __init__(self, position, position_max, date):
         """Constructeur de notre classe Home"""
         try:
             self.mq = sysv_ipc.MessageQueue(12)
@@ -47,6 +48,8 @@ class Home:
         self.m = str(self.ppid).encode() #VOIR AVEC MATHIS
         #Idée faire une message queue inter home
         self.position = position
+        self.position_before= self.position -1 if self.position > 0 else position_max
+        self.position_after = self.position +1 if self.position < position_max else 0
         self.comportement = Comportement()
         self.taux_consommation = self.comportement.taux_conso()
         self.current_consommation = self.taux_consommation
@@ -69,17 +72,15 @@ class Home:
 
     def send(self, need):
         """Gère l'envoie d'une certaine quantité d'énergie en fonction du critère du foyer (Donneur, vendeur ou neutre"""
-        pass
         if self.comportement.comportement == Comportement.DONNEUR:
+            print("toto donneur")
             self.give(need)
-            pass
         if self.comportement.comportement == Comportement.VENDEUR:
             self.sell(need)
-            pass
         if self.comportement.comportement == Comportement.NEUTRE:
-            if not self.give(need) :
-                self.sell(need)
-            pass
+            notGiven = self.give(need)
+            if notGiven> 0 :
+                self.sell(notGiven)
 
 
     def buy(self, need):
@@ -87,10 +88,16 @@ class Home:
         needs = {
             "id": self.position,
             "goal": "buy",
-            "needs": need
+            "needs": abs(need)
         }
         m = str(needs).encode()
         self.mq.send(m, self.position)
+
+
+        ack_energie, type = self.mq.receive(type=(1000+self.position))
+        ack_energie = int(ack_energie.decode())
+        print(" ———————————— TRANSACTION TRANSALTLANTIQUE OKKKK PELO : {}".format(ack_energie))
+        self.stockage += ack_energie
         #pass
 
     def sell(self, need):
@@ -106,7 +113,57 @@ class Home:
 
     def give(self, need):
         """Retourne un booléan => TRUE s'il a pu donnner FALSE sinon"""
-        pass
+        print("toto give")
+        needs = {
+            "id": self.position,
+            "goal": "give",
+            "needs": abs(need),
+            "state": 0
+        }
+        m = str(needs).encode()
+        print("{} envoie un message de type {}".format(self.position,2000+self.position_before))
+        print("{} envoie un message de type {}".format(self.position,2000+self.position_after))
+        self.mq.send(m, type=(2000+self.position_before))# on envoie la proposition de don à la maison de gauche, type 2000 pour premiere communication
+        self.mq.send(m, type=(2000+self.position_after))# on envoie la proposition de don à la maison de droite
+
+    #Peut être que ça merde ici
+        mB,tB =  self.mq.receive(type=(3000+self.position_before)) # messageBefore (mb) typeBefore (tb) -> réponse associée à la proposition, type 3000 une fois le contact bien mené
+        mA,tA = self.mq.receive(type=(3000+self.position_after))
+
+
+        mA = ast.literal_eval(mA.decode())
+        mB = ast.literal_eval(mB.decode())
+
+        needs["state"] = 2
+        needs["id"]=self.position
+
+        if mA["ack"] > mB["ack"] :
+            order = [mA, mB]
+        else :
+            order = [mB, mA]
+        print("Ordre de don : {} ".format(order))
+        for i in range(0, len(order)) : #On envoie l'energie qu'on a aux voisins en donnnant en priorité à celui qui en a le plus besoin
+            needs["needs"] = min(abs(need), abs(order[i]["ack"]))
+            self.mq.send(str(needs).encode(), type=(3000+order[i]["id"]))
+            if i < len(order)-1:
+                needs-=order[i]["needs"]
+
+        return needs
+
+    def handle_giveMessage(self, mess):
+        print("•••••• {} veut me donner {}".format(mess["id"], mess["needs"]))
+        giver = mess["id"]
+        #Prépare un message de réponse
+        mess["state"] = 1
+        mess["id"] = self.position#VERIF J'ai quelques couilles à cet endroit
+        mess["ack"] = self.stockage_max - self.stockage #on répond en donnant le stockage disponnible
+        self.mq.send(str(mess).encode(),type=(3000+giver)) #réponse à la proposition
+
+        mGiver,tGiver =  self.mq.receive(type=(3000+self.position))
+        mGiver = ast.literal_eval(mGiver.decode())
+        print("•••••• Je suis {} et {}  me donne {}".format(self.position, mGiver["id"], mGiver["needs"]))
+        self.stockage += mGiver["needs"]
+
 
     def actionMeteo(self):
         self.current_consommation = self.taux_consommation
@@ -146,8 +203,18 @@ class Home:
         m = str(self.state).encode()
         self.mq.send(m,self.position)
 
-    def setup(self, date):
+    def giverListen(self):
         while True :
+            mess, type = self.mq.receive(type=(2000+self.position))
+            mess = ast.literal_eval(mess.decode())
+            if "goal" in mess and "state" in mess and mess["state"] == 0:
+                threading.Thread(target=self.handle_giveMessage, args=(mess,)).start()
+
+    def setup(self, date):
+        threading.Thread(target=self.giverListen, args=()).start()
+        while True :
+            # on écoute si on a des nouveaux messages
+
             if(self.date == date.value - 1 and date.value > 0):
                 self.update()
                 self.send_data()
