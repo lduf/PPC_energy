@@ -16,7 +16,7 @@ class Weather:
     def __init__(self, nb_foyers=4):
         """Constructeur de notre classe"""
 
-        print("FIRST THING IN METEO")
+        #print("FIRST THING IN METEO")
         self.nb_foyers = nb_foyers
         self.date = 0  # int between 0 and 365 -> to get from Market
         self.conditions = [self.weather_conditions() for _ in range(self.nb_foyers)]  # contient les facteurs pour le calcul de la tempé
@@ -52,11 +52,11 @@ class Weather:
         return a*math.cos(p*(math.pi)+8/365*self.date)+b*math.cos(self.date/30)-c*math.cos(self.date/50)+d
 
     def current_temperature(self):
-        print("******** Initialisation des températures")
+        #print("******** Initialisation des températures")
         self.temperatures = [round(self.temp(x),1) for x in range(self.nb_foyers)]
         self.smSema.acquire()
         self.sm.write(str((self.date,self.temperatures)).encode())
-        print("Ajout de la météo dans la message queue : -- {} \n --".format(str(self.temperatures).encode()))
+       # print("Ajout de la météo dans la message queue : -- {} \n --".format(str(self.temperatures).encode()))
         self.smSema.release()
 
 

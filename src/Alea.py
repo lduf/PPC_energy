@@ -18,7 +18,6 @@ class Alea(object) :
         self.setup()
 
     def genAlea(self, signum, frame):
-            print("QQCH DANS ALEAO Date du jour {}".format(self.date))
             prob = random.randint(0, 10**self.risque) # on tire un entier aléatoire entre 0 et 10^risque
             print("proba risque :",prob)
             if prob in self.event: # si l'entier que l'on a tiré en compris dans les indices de nos evenements (1,2,3 pour eco et 4,5,6 pour politique), alors on selectionne l'aléa correspondant

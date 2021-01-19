@@ -177,9 +177,7 @@ class Market:
 
     def newDate(self):
         # Nouvelle date => on augmente la date, on sig nos child
-        print("Ceci est une nouvelle date happy new day !")
         if (self.date.value >= 0):
-            print("J'envoie mes sig")
             os.kill(self.pol.pid, signal.SIGUSR1)  # on va envoyer nos signaux pour traiter dans les process
             os.kill(self.econ.pid, signal.SIGUSR1)  # on va envoyer nos signaux pour traiter dans les process
             os.kill(self.wea.pid, signal.SIGUSR1)  # on va envoyer nos signaux pour traiter dans les process
