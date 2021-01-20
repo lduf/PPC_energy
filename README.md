@@ -1,6 +1,8 @@
 # PPC_energy
 Projet de PPC - The Energy Market
 
+Note de projet avant implémentation : 
+
 <hr>
 
 ## 1. Objectif du projet:
